@@ -18,7 +18,7 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 }
 
-export const register = asyncHandler(async (req, res) => {
+export const register = asyncHandler(async (req, res, next) => {
   const { fullName, username, email, password, confirmPassword } = req.body
 
   // Validation
@@ -91,7 +91,7 @@ export const register = asyncHandler(async (req, res) => {
   )
 })
 
-export const login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body
 
   // Validation
@@ -142,14 +142,14 @@ export const login = asyncHandler(async (req, res) => {
   )
 })
 
-export const logout = asyncHandler(async (req, res) => {
+export const logout = asyncHandler(async (req, res, next) => {
   res.clearCookie('accessToken')
   res.status(200).json(
     new ApiResponse(200, {}, 'Logged out successfully')
   )
 })
 
-export const getCurrentUser = asyncHandler(async (req, res) => {
+export const getCurrentUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id)
 
   res.status(200).json(

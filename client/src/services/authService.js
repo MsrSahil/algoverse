@@ -22,7 +22,13 @@ export const authService = {
       })
       return response.data
     } catch (error) {
-      throw error.response?.data || { message: 'Registration failed' }
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed'
+      console.error('Registration error:', { 
+        status: error.response?.status,
+        message: errorMessage,
+        data: error.response?.data 
+      })
+      throw new Error(errorMessage)
     }
   },
 
@@ -34,7 +40,13 @@ export const authService = {
       })
       return response.data
     } catch (error) {
-      throw error.response?.data || { message: 'Login failed' }
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed'
+      console.error('Login error:', { 
+        status: error.response?.status,
+        message: errorMessage,
+        data: error.response?.data 
+      })
+      throw new Error(errorMessage)
     }
   },
 
@@ -42,7 +54,12 @@ export const authService = {
     try {
       await apiClient.post('/auth/logout')
     } catch (error) {
-      console.error('Logout error:', error)
+      const errorMessage = error.response?.data?.message || error.message || 'Logout failed'
+      console.error('Logout error:', { 
+        status: error.response?.status,
+        message: errorMessage,
+        data: error.response?.data 
+      })
     }
   },
 
@@ -51,7 +68,13 @@ export const authService = {
       const response = await apiClient.get('/auth/me')
       return response.data
     } catch (error) {
-      throw error.response?.data || { message: 'Failed to fetch user' }
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch user'
+      console.error('Get user error:', { 
+        status: error.response?.status,
+        message: errorMessage,
+        data: error.response?.data 
+      })
+      throw new Error(errorMessage)
     }
   }
 }
