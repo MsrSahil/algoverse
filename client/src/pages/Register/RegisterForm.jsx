@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext.jsx'
 import { User, Mail, Lock } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import InputField from './InputField.jsx'
 import PasswordStrength from './PasswordStrength.jsx'
 import TermsCheckbox from './TermsCheckbox.jsx'
 import SocialLogin from './SocialLogin.jsx'
+import Toast from '../../components/common/Toast.jsx'
 
 const RegisterForm = () => {
+  const navigate = useNavigate()
+  const { register, loading, error: authError, clearError } = useAuth()
+
   const [formData, setFormData] = useState({
     fullName: '',
     username: '',
@@ -18,6 +23,19 @@ const RegisterForm = () => {
 
   const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  // Clear auth error when component mounts
+  useEffect(() => {
+    clearError()
+  }, [clearError])
+
+  // Show toast for auth errors
+  useEffect(() => {
+    if (authError) {
+      setToast({ type: 'error', message: authError })
+    }
+  }, [authError])
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -86,17 +104,42 @@ const RegisterForm = () => {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (validateForm()) {
-      // Form is valid - in a real app, this would send to backend
-      console.log('Form submitted:', formData)
-      // Show success message or redirect
+    if (!validateForm()) {
+      return
     }
+
+    try {
+      await register(
+        formData.fullName,
+        formData.username,
+        formData.email,
+        formData.password,
+        formData.confirmPassword
+      )
+
+      setToast({
+        type: 'success',
+        message: 'Account created successfully! Redirecting to login...'
+      })
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
+    } catch (err) {
+      console.error('Registration error:', err)
+    }
+  }
+
+  const dismissToast = () => {
+    setToast(null)
   }
 
   return (
     <div className="flex flex-col justify-center">
+      {toast && <Toast type={toast.type} message={toast.message} onDismiss={dismissToast} />}
+
       <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl sm:p-10">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
@@ -178,18 +221,19 @@ const RegisterForm = () => {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 transition duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-400/40"
+            disabled={loading}
+            className="w-full rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 transition duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-400/40 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
 
           <SocialLogin />
 
           <div className="text-center text-sm">
             <span className="text-slate-400">Already have an account? </span>
-            <Link to="/login" className="font-semibold text-cyan-300 transition hover:text-cyan-200">
+            <a href="/login" className="font-semibold text-cyan-300 transition hover:text-cyan-200">
               Sign In
-            </Link>
+            </a>
           </div>
         </form>
       </div>
