@@ -1,12 +1,16 @@
-import PagePlaceholder from '../../components/common/PagePlaceholder.jsx'
+import FeaturePanel from './FeaturePanel.jsx'
+import RegisterForm from './RegisterForm.jsx'
 
 const Register = () => {
   return (
-    <PagePlaceholder
-      eyebrow="Authentication"
-      title="Register"
-      description="Register UI will be built here with email, password, and confirm password form. Frontend-only form for the MVP."
-    />
+    <section className="min-h-[calc(100vh-var(--navbar-height))] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+          <FeaturePanel />
+          <RegisterForm />
+        </div>
+      </div>
+    </section>
   )
 }
 
