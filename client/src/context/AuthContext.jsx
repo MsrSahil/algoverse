@@ -1,13 +1,34 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { authService } from '../services/authService.js'
 
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(false)
+  // Set initial loading to true so the app waits to check the session before rendering routes
+  const [loading, setLoading] = useState(true) 
   const [error, setError] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  // Check for an existing session when the app loads
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await authService.getCurrentUser()
+        if (response.success) {
+          setUser(response.data.user)
+          setIsAuthenticated(true)
+        }
+      } catch (err) {
+        setUser(null)
+        setIsAuthenticated(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuthStatus()
+  }, [])
 
   const register = useCallback(async (fullName, username, email, password, confirmPassword) => {
     setLoading(true)

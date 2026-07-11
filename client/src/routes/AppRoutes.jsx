@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout.jsx'
+import ProtectedRoute from '../components/common/ProtectedRoute.jsx'
 
 // Import pages
 import Home from '../pages/Home/index.jsx'
@@ -15,13 +16,20 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
+        {/* Public Routes - Accessible to anyone */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/algorithms" element={<Algorithms />} />
         <Route path="/algorithm/:slug" element={<AlgorithmDetails />} />
-        <Route path="/profile" element={<Profile />} />
+
+        {/* Protected Routes - Only accessible to logged-in users */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+
+        {/* Catch-all 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
