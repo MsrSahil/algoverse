@@ -60,7 +60,8 @@ const LoginForm = () => {
     if (!validateForm()) return
 
     try {
-      await login(formData.email, formData.password)
+      // UPDATED: Pass the rememberMe state to the login context function
+      await login(formData.email, formData.password, rememberMe)
       navigate('/dashboard', { replace: true })
     } catch (err) {
       // Error is handled by AuthContext, we don't need to do anything here

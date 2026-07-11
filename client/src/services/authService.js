@@ -32,11 +32,13 @@ export const authService = {
     }
   },
 
-  login: async (email, password) => {
+  // Updated to include rememberMe parameter
+  login: async (email, password, rememberMe = false) => {
     try {
       const response = await apiClient.post('/auth/login', {
         email,
-        password
+        password,
+        rememberMe
       })
       return response.data
     } catch (error) {

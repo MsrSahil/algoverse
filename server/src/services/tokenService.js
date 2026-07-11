@@ -1,8 +1,11 @@
 import jwt from 'jsonwebtoken'
 
-export const generateAccessToken = (userId) => {
+export const generateAccessToken = (userId, rememberMe = false) => {
+  // If Remember Me is true: 30 days. Otherwise: 1 day (session-like)
+  const expiresIn = rememberMe ? '30d' : '1d';
+  
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: '7d'
+    expiresIn
   })
 }
 

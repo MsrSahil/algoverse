@@ -11,11 +11,11 @@ import {
   passwordsMatch
 } from '../validators/authValidator.js'
 
-const COOKIE_OPTIONS = {
+// Base cookie options without maxAge (we will set maxAge dynamically)
+const BASE_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'Lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  sameSite: 'Lax'
 }
 
 export const register = asyncHandler(async (req, res, next) => {
@@ -78,11 +78,12 @@ export const register = asyncHandler(async (req, res, next) => {
     provider: 'email'
   })
 
-  // Generate token
+  // Generate token (default 7 days for registration)
   const accessToken = generateAccessToken(user._id)
+  const maxAge = 7 * 24 * 60 * 60 * 1000 
 
   // Set cookie
-  res.cookie('accessToken', accessToken, COOKIE_OPTIONS)
+  res.cookie('accessToken', accessToken, { ...BASE_COOKIE_OPTIONS, maxAge })
 
   const userResponse = user.toJSON()
 
@@ -92,7 +93,7 @@ export const register = asyncHandler(async (req, res, next) => {
 })
 
 export const login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body
+  const { email, password, rememberMe } = req.body
 
   // Validation
   if (!email?.trim()) {
@@ -106,9 +107,10 @@ export const login = asyncHandler(async (req, res, next) => {
     throw new ApiError(400, 'Password is required')
   }
 
-  // Find user and include password field
+  // Find user and include password field for verification
   const user = await User.findOne({ email: email.toLowerCase() }).select('+password')
 
+  // Generic error message for security
   if (!user) {
     throw new ApiError(401, 'Invalid email or password')
   }
@@ -129,21 +131,24 @@ export const login = asyncHandler(async (req, res, next) => {
   user.lastLogin = new Date()
   await user.save()
 
-  // Generate token
-  const accessToken = generateAccessToken(user._id)
+  // Generate token WITH rememberMe flag
+  const accessToken = generateAccessToken(user._id, rememberMe)
+
+  // Calculate dynamic maxAge: 30 days if Remember Me checked, otherwise 1 day
+  const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
 
   // Set cookie
-  res.cookie('accessToken', accessToken, COOKIE_OPTIONS)
+  res.cookie('accessToken', accessToken, { ...BASE_COOKIE_OPTIONS, maxAge })
 
   const userResponse = user.toJSON()
 
   res.status(200).json(
-    new ApiResponse(200, { user: userResponse, accessToken }, 'Logged in successfully')
+    new ApiResponse(200, { user: userResponse }, 'Logged in successfully')
   )
 })
 
 export const logout = asyncHandler(async (req, res, next) => {
-  res.clearCookie('accessToken')
+  res.clearCookie('accessToken', BASE_COOKIE_OPTIONS)
   res.status(200).json(
     new ApiResponse(200, {}, 'Logged out successfully')
   )

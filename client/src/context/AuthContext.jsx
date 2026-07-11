@@ -49,11 +49,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  const login = useCallback(async (email, password) => {
+  // UPDATED: Added rememberMe parameter
+  const login = useCallback(async (email, password, rememberMe = false) => {
     setLoading(true)
     setError(null)
     try {
-      const response = await authService.login(email, password)
+      const response = await authService.login(email, password, rememberMe)
       if (response.success) {
         setUser(response.data.user)
         setIsAuthenticated(true)
