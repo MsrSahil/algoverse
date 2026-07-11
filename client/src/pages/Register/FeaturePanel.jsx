@@ -1,6 +1,7 @@
 import { Zap, TrendingUp, Target } from 'lucide-react'
 
-const features = [
+// Default features (works perfectly for both Login and Register)
+const defaultFeatures = [
   {
     icon: Zap,
     title: 'Interactive Visualizations',
@@ -18,7 +19,13 @@ const features = [
   }
 ]
 
-const FeaturePanel = () => {
+const FeaturePanel = ({
+  badgeText = "Welcome to DSA Visualizer",
+  titlePre = "Start Your DSA Learning",
+  titleHighlight = "Journey",
+  description = "Master data structures and algorithms through interactive visualizations, step-by-step explanations, and placement-ready practice problems.",
+  features = defaultFeatures
+}) => {
   return (
     <div className="relative hidden flex-col justify-between lg:flex">
       <div>
@@ -27,21 +34,21 @@ const FeaturePanel = () => {
 
         <div className="relative">
           <p className="mb-3 inline-block rounded-full bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
-            Welcome to DSA Visualizer
+            {badgeText}
           </p>
           <h1 className="mt-6 text-5xl font-black leading-tight text-white">
-            Start Your DSA Learning{' '}
+            {titlePre}{' '}
             <span className="bg-linear-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-              Journey
+              {titleHighlight}
             </span>
           </h1>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-slate-400">
-            Master data structures and algorithms through interactive visualizations, step-by-step explanations, and placement-ready practice problems.
+            {description}
           </p>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 mt-12">
         {features.map((feature, idx) => {
           const Icon = feature.icon
           return (

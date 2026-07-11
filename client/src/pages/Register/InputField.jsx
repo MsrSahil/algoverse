@@ -11,7 +11,8 @@ const InputField = ({
   name,
   icon: Icon,
   showPasswordToggle = false,
-  onPasswordToggle
+  onPasswordToggle,
+  autoComplete // Added this prop
 }) => {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -37,6 +38,7 @@ const InputField = ({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          autoComplete={autoComplete} // Applied here
           className={`w-full rounded-xl border-2 bg-white/5 py-3 px-4 text-white placeholder-slate-500 transition duration-200 focus:outline-none ${
             Icon ? 'pl-12' : 'pl-4'
           } ${
@@ -50,6 +52,7 @@ const InputField = ({
             type="button"
             onClick={handleToggle}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-300"
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
               <EyeOff className="h-5 w-5" />
