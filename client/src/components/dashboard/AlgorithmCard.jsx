@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { getDifficultyStyles } from './difficultyStyles'
 
 const AlgorithmCard = ({ algorithm }) => {
+  const isAvailable = algorithm.status === 'available'
+
   return (
     <article className="rounded-2xl border border-white/10 bg-white/5 p-5 transition duration-300 hover:-translate-y-1 hover:border-cyan-400/50 hover:bg-cyan-400/10">
       <div className="flex items-start justify-between gap-4">
@@ -23,12 +25,18 @@ const AlgorithmCard = ({ algorithm }) => {
           {algorithm.estimatedTime}
         </span>
 
-        <Link
-          to={`/algorithm/${algorithm.slug}`}
-          className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:border-cyan-400/60 hover:bg-cyan-400/10"
-        >
-          Learn
-        </Link>
+        {isAvailable ? (
+          <Link
+            to={`/algorithm/${algorithm.slug}`}
+            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:border-cyan-400/60 hover:bg-cyan-400/10"
+          >
+            Learn
+          </Link>
+        ) : (
+          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
+            Coming Soon
+          </span>
+        )}
       </div>
     </article>
   )

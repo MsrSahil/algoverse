@@ -1,3 +1,32 @@
+import { algorithmLookupBySlug } from '../data/algorithms'
+
+const toDashboardAlgorithm = (slug) => {
+  const algorithm = algorithmLookupBySlug[slug]
+
+  if (!algorithm) {
+    return null
+  }
+
+  return {
+    id: algorithm.id,
+    title: algorithm.title,
+    slug: algorithm.slug,
+    category: algorithm.categoryLabel,
+    difficulty: algorithm.difficulty,
+    estimatedTime: algorithm.estimatedTime,
+    description: algorithm.description,
+    status: algorithm.status
+  }
+}
+
+const continueLearningAlgorithm = toDashboardAlgorithm('bubble-sort')
+const recommendedAlgorithms = [
+  toDashboardAlgorithm('bubble-sort'),
+  toDashboardAlgorithm('binary-search'),
+  toDashboardAlgorithm('selection-sort'),
+  toDashboardAlgorithm('merge-sort')
+].filter(Boolean)
+
 export const dashboardData = {
   overview: [
     {
@@ -35,14 +64,12 @@ export const dashboardData = {
     totalAlgorithms: 50,
     message: "You're building momentum. Keep going!"
   },
-  continueLearning: {
-    title: 'Bubble Sort',
-    slug: 'bubble-sort',
-    category: 'Sorting',
-    difficulty: 'Easy',
-    progress: 60,
-    estimatedTime: '10 min'
-  },
+  continueLearning: continueLearningAlgorithm
+    ? {
+        ...continueLearningAlgorithm,
+        progress: 60
+      }
+    : null,
   categories: [
     {
       id: 'sorting',
@@ -115,44 +142,7 @@ export const dashboardData = {
       icon: 'dp'
     }
   ],
-  recommendedAlgorithms: [
-    {
-      id: 'bubble-sort',
-      title: 'Bubble Sort',
-      slug: 'bubble-sort',
-      category: 'Sorting',
-      difficulty: 'Easy',
-      estimatedTime: '10 min',
-      description: 'Learn how adjacent elements are compared and swapped.'
-    },
-    {
-      id: 'binary-search',
-      title: 'Binary Search',
-      slug: 'binary-search',
-      category: 'Searching',
-      difficulty: 'Easy',
-      estimatedTime: '8 min',
-      description: 'Use divide-and-conquer to locate values quickly.'
-    },
-    {
-      id: 'selection-sort',
-      title: 'Selection Sort',
-      slug: 'selection-sort',
-      category: 'Sorting',
-      difficulty: 'Easy',
-      estimatedTime: '12 min',
-      description: 'Choose the smallest element in each iteration.'
-    },
-    {
-      id: 'merge-sort',
-      title: 'Merge Sort',
-      slug: 'merge-sort',
-      category: 'Sorting',
-      difficulty: 'Medium',
-      estimatedTime: '15 min',
-      description: 'Split, sort, and merge arrays with stable performance.'
-    }
-  ],
+  recommendedAlgorithms,
   recentActivity: [
     {
       id: 'activity-1',
@@ -190,8 +180,8 @@ export const dashboardData = {
     },
     {
       id: 'fav-3',
-      title: 'Stack Basics',
-      slug: 'stack-basics',
+      title: 'Stack',
+      slug: 'stack',
       category: 'Stack',
       difficulty: 'Easy'
     }
