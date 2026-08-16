@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const CTASection = () => {
   return (
@@ -19,13 +20,13 @@ const CTASection = () => {
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-          <button className="group flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-cyan-400 to-emerald-400 px-8 py-4 text-base font-semibold text-slate-950 transition duration-300 hover:scale-110 hover:shadow-lg hover:shadow-cyan-400/40">
+          <Link to="/register" className="group flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-cyan-400 to-emerald-400 px-8 py-4 text-base font-semibold text-slate-950 transition duration-300 hover:scale-110 hover:shadow-lg hover:shadow-cyan-400/40">
             Start Free Learning
             <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
-          </button>
-          <button className="flex items-center justify-center gap-2 rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur transition duration-300 hover:border-cyan-400/50 hover:bg-cyan-400/10">
-            Schedule Demo
-          </button>
+          </Link>
+          <Link to="/algorithms" className="flex items-center justify-center gap-2 rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur transition duration-300 hover:border-cyan-400/50 hover:bg-cyan-400/10">
+            Explore Algorithms
+          </Link>
         </div>
       </div>
     </section>

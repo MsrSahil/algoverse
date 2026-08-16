@@ -13,15 +13,8 @@ const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false)
   const [validationErrors, setValidationErrors] = useState({})
 
-  const { login, loading, error: authError, clearError, isAuthenticated } = useAuth()
+  const { login, loading, error: authError, clearError } = useAuth()
   const navigate = useNavigate()
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
 
   // Clear context errors on unmount or initial load
   useEffect(() => {
@@ -138,9 +131,9 @@ const LoginForm = () => {
               <span className="text-slate-400 group-hover:text-slate-300 transition-colors">Remember me</span>
             </label>
 
-            <a href="#" className="font-semibold text-cyan-400 transition-colors hover:text-cyan-300">
+            <button type="button" className="font-semibold text-cyan-400 transition-colors hover:text-cyan-300">
               Forgot password?
-            </a>
+            </button>
           </div>
 
           <button

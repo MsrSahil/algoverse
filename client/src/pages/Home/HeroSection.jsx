@@ -1,4 +1,5 @@
 import { ArrowRight, Play } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const HeroSection = () => {
   return (
@@ -19,14 +20,14 @@ const HeroSection = () => {
               Watch algorithms come to life. Step through each operation. Understand the complexity. Ace your interviews with confidence.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <button className="group flex items-center gap-2 rounded-full bg-linear-to-r from-cyan-400 to-emerald-400 px-8 py-4 text-sm font-semibold text-slate-950 transition duration-300 hover:scale-110 hover:shadow-lg hover:shadow-cyan-400/40">
+              <Link to="/algorithms" className="group flex items-center gap-2 rounded-full bg-linear-to-r from-cyan-400 to-emerald-400 px-8 py-4 text-sm font-semibold text-slate-950 transition duration-300 hover:scale-110 hover:shadow-lg hover:shadow-cyan-400/40">
                 Start Learning
                 <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
-              </button>
-              <button className="flex items-center gap-2 rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur transition duration-300 hover:border-cyan-400/50 hover:bg-cyan-400/10">
+              </Link>
+              <Link to="/algorithms" className="flex items-center gap-2 rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur transition duration-300 hover:border-cyan-400/50 hover:bg-cyan-400/10">
                 <Play className="h-5 w-5" />
                 Explore Algorithms
-              </button>
+              </Link>
             </div>
           </div>
 

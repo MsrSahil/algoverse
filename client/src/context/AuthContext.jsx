@@ -5,30 +5,35 @@ const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
-  // Set initial loading to true so the app waits to check the session before rendering routes
-  const [loading, setLoading] = useState(true) 
+  const [loading, setLoading] = useState(false)
+  // Dedicated boot/loading state for session check. Route guards rely on this.
+  const [authLoading, setAuthLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Check for an existing session when the app loads
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await authService.getCurrentUser()
-        if (response.success) {
-          setUser(response.data.user)
-          setIsAuthenticated(true)
-        }
-      } catch (err) {
+  const checkAuth = useCallback(async () => {
+    setAuthLoading(true)
+    try {
+      const response = await authService.getCurrentUser()
+      if (response.success) {
+        setUser(response.data.user)
+        setIsAuthenticated(true)
+      } else {
         setUser(null)
         setIsAuthenticated(false)
-      } finally {
-        setLoading(false)
       }
+    } catch {
+      setUser(null)
+      setIsAuthenticated(false)
+    } finally {
+      setAuthLoading(false)
     }
-
-    checkAuthStatus()
   }, [])
+
+  // Check for an existing session when the app loads
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   const register = useCallback(async (fullName, username, email, password, confirmPassword) => {
     setLoading(true)
@@ -90,11 +95,13 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    authLoading,
     error,
     isAuthenticated,
     register,
     login,
     logout,
+    checkAuth,
     clearError
   }
 

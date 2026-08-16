@@ -1,4 +1,5 @@
-import { ArrowRight, Clock, BarChart3 } from 'lucide-react'
+import { ArrowRight, Clock } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const algorithms = [
   { name: 'Bubble Sort', category: 'Sorting', difficulty: 'Easy', time: '5 min' },
@@ -22,6 +23,8 @@ const getDifficultyColor = (difficulty) => {
   }
 }
 
+const toSlug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+
 const PopularAlgorithmsSection = () => {
   return (
     <section className="px-4 py-20 sm:px-6 lg:px-8">
@@ -35,10 +38,10 @@ const PopularAlgorithmsSection = () => {
               Most Viewed Algorithms
             </h2>
           </div>
-          <button className="group w-fit rounded-full border border-cyan-400/30 bg-cyan-400/5 px-6 py-3 text-sm font-semibold text-cyan-300 transition hover:border-cyan-400/60 hover:bg-cyan-400/15">
+          <Link to="/algorithms" className="group w-fit rounded-full border border-cyan-400/30 bg-cyan-400/5 px-6 py-3 text-sm font-semibold text-cyan-300 transition hover:border-cyan-400/60 hover:bg-cyan-400/15">
             View All
             <ArrowRight className="ml-2 inline h-4 w-4 transition group-hover:translate-x-1" />
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -65,9 +68,12 @@ const PopularAlgorithmsSection = () => {
                 </span>
               </div>
 
-              <button className="w-full rounded-lg bg-cyan-400/10 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-400/20 hover:text-cyan-200">
+              <Link
+                to={`/algorithm/${toSlug(algo.name)}`}
+                className="block w-full rounded-lg bg-cyan-400/10 py-2 text-center text-sm font-semibold text-cyan-300 transition hover:bg-cyan-400/20 hover:text-cyan-200"
+              >
                 Learn Now
-              </button>
+              </Link>
             </div>
           ))}
         </div>

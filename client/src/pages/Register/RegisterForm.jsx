@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { User, Mail, Lock } from 'lucide-react'
 import InputField from './InputField.jsx'
@@ -121,11 +121,11 @@ const RegisterForm = () => {
 
       setToast({
         type: 'success',
-        message: 'Account created successfully! Redirecting to login...'
+        message: 'Account created successfully! Redirecting to dashboard...'
       })
 
       setTimeout(() => {
-        navigate('/login')
+        navigate('/dashboard', { replace: true })
       }, 2000)
     } catch (err) {
       console.error('Registration error:', err)
@@ -231,9 +231,9 @@ const RegisterForm = () => {
 
           <div className="text-center text-sm">
             <span className="text-slate-400">Already have an account? </span>
-            <a href="/login" className="font-semibold text-cyan-300 transition hover:text-cyan-200">
+            <Link to="/login" className="font-semibold text-cyan-300 transition hover:text-cyan-200">
               Sign In
-            </a>
+            </Link>
           </div>
         </form>
       </div>

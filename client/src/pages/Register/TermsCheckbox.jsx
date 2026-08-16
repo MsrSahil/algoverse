@@ -24,19 +24,13 @@ const TermsCheckbox = ({ checked, onChange, error, name }) => {
         </div>
         <span className="text-sm text-slate-300">
           I agree to the{' '}
-          <a
-            href="#"
-            className="text-cyan-300 transition hover:text-cyan-200 hover:underline"
-          >
+          <span className="text-cyan-300">
             Terms & Conditions
-          </a>
+          </span>
           {' '}and{' '}
-          <a
-            href="#"
-            className="text-cyan-300 transition hover:text-cyan-200 hover:underline"
-          >
+          <span className="text-cyan-300">
             Privacy Policy
-          </a>
+          </span>
         </span>
       </label>
       {error && <p className="text-xs text-red-400">{error}</p>}

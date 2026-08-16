@@ -1,4 +1,5 @@
 import { ArrowRight, Shuffle, Search, Database, Link2, TreePine, Network, Zap } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const categories = [
   { icon: Shuffle, title: 'Sorting', count: '12 Algorithms' },
@@ -28,7 +29,8 @@ const CategoriesSection = () => {
           {categories.map((category, idx) => {
             const Icon = category.icon
             return (
-              <div
+              <Link
+                to="/algorithms"
                 key={idx}
                 className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition duration-300 hover:border-cyan-400/50 hover:bg-cyan-400/10 cursor-pointer"
               >
@@ -43,7 +45,7 @@ const CategoriesSection = () => {
                   </div>
                   <ArrowRight className="h-5 w-5 text-slate-400 transition group-hover:translate-x-2 group-hover:text-cyan-300" />
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>
