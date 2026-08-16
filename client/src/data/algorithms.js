@@ -45,7 +45,171 @@ export const algorithms = [
     estimatedTime: '10 min',
     estimatedMinutes: 10,
     status: ALGORITHM_STATUS.AVAILABLE,
-    tags: ['sorting', 'comparison', 'beginner']
+    tags: ['sorting', 'comparison', 'beginner'],
+    keyIdea:
+      'Repeatedly compare adjacent elements and move the largest unsorted element toward the end of the array.',
+    overview: {
+      whatIsIt:
+        'Bubble Sort is a beginner-friendly sorting technique that repeatedly checks adjacent values and swaps them if they are in the wrong order.',
+      whenToUse:
+        'Use it for learning sorting basics, understanding swaps, and for very small datasets where implementation simplicity matters.',
+      keyIdea:
+        'Each pass bubbles the largest remaining element to the right until the list becomes sorted.'
+    },
+    explanation: {
+      howItWorks: [
+        'Start from the first element and compare each adjacent pair.',
+        'Swap values when the left value is greater than the right value.',
+        'Continue until the end of the unsorted portion.',
+        'Repeat passes until a full pass makes no swaps.'
+      ],
+      stepByStep: [
+        'Start from the first element.',
+        'Compare adjacent elements.',
+        'Swap them if they are in the wrong order.',
+        'Continue through the array.',
+        'Repeat until the array is sorted.'
+      ],
+      whenToUse: [
+        'When teaching or learning sorting fundamentals.',
+        'When data is nearly sorted and the list size is small.',
+        'When implementation clarity is more important than speed.'
+      ],
+      advantages: [
+        'Very easy to understand and implement.',
+        'In-place sorting with O(1) extra space.',
+        'Can detect already sorted arrays with an optimization flag.'
+      ],
+      disadvantages: [
+        'Inefficient for medium and large datasets.',
+        'High average and worst-case time complexity O(n^2).',
+        'Performs many swaps compared to more advanced sorts.'
+      ]
+    },
+    codeImplementations: {
+      javascript: `function bubbleSort(arr) {
+  const result = [...arr];
+  const n = result.length;
+
+  for (let i = 0; i < n - 1; i += 1) {
+    let swapped = false;
+
+    for (let j = 0; j < n - 1 - i; j += 1) {
+      if (result[j] > result[j + 1]) {
+        [result[j], result[j + 1]] = [result[j + 1], result[j]];
+        swapped = true;
+      }
+    }
+
+    if (!swapped) {
+      break;
+    }
+  }
+
+  return result;
+}`,
+      python: `def bubble_sort(arr):
+    result = arr[:]
+    n = len(result)
+
+    for i in range(n - 1):
+        swapped = False
+        for j in range(0, n - 1 - i):
+            if result[j] > result[j + 1]:
+                result[j], result[j + 1] = result[j + 1], result[j]
+                swapped = True
+
+        if not swapped:
+            break
+
+    return result`,
+      java: `public static int[] bubbleSort(int[] arr) {
+    int[] result = arr.clone();
+    int n = result.length;
+
+    for (int i = 0; i < n - 1; i++) {
+      boolean swapped = false;
+
+      for (int j = 0; j < n - 1 - i; j++) {
+        if (result[j] > result[j + 1]) {
+          int temp = result[j];
+          result[j] = result[j + 1];
+          result[j + 1] = temp;
+          swapped = true;
+        }
+      }
+
+      if (!swapped) {
+        break;
+      }
+    }
+
+    return result;
+}`,
+      cpp: `void bubbleSort(std::vector<int>& arr) {
+  int n = static_cast<int>(arr.size());
+
+  for (int i = 0; i < n - 1; ++i) {
+    bool swapped = false;
+
+    for (int j = 0; j < n - 1 - i; ++j) {
+      if (arr[j] > arr[j + 1]) {
+        std::swap(arr[j], arr[j + 1]);
+        swapped = true;
+      }
+    }
+
+    if (!swapped) {
+      break;
+    }
+  }
+}`
+    },
+    dryRun: [
+      {
+        step: 'Step 0',
+        title: 'Initial array',
+        detail: '[50, 30, 80, 10]'
+      },
+      {
+        step: 'Step 1',
+        title: 'Compare 50 and 30',
+        detail: '50 > 30, swap needed.'
+      },
+      {
+        step: 'Step 2',
+        title: 'Swap 50 and 30',
+        detail: 'Array becomes [30, 50, 80, 10].'
+      },
+      {
+        step: 'Step 3',
+        title: 'Continue pass',
+        detail: 'Compare 50 and 80, no swap. Compare 80 and 10, then swap.'
+      },
+      {
+        step: 'Step 4',
+        title: 'Repeat passes',
+        detail: 'Continue until no swaps happen in a complete pass.'
+      }
+    ],
+    practiceProblems: [
+      {
+        title: 'Sort an Array',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Implement sorting for an integer array using efficient methods.',
+        url: 'https://leetcode.com/problems/sort-an-array/'
+      },
+      {
+        title: 'Bubble Sort Fundamentals',
+        difficulty: 'Easy',
+        platform: 'Practice Set',
+        description: 'Practice adjacent comparisons, swaps, and pass-by-pass optimization.',
+        url: null
+      }
+    ],
+    relatedAlgorithms: ['selection-sort', 'insertion-sort', 'merge-sort', 'quick-sort'],
+    visualizationPreview: [50, 30, 80, 10, 60]
   },
   {
     id: 'selection-sort',
