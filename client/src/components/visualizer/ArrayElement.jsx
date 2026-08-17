@@ -10,30 +10,62 @@ import { ELEMENT_STATE, getElementStyleConfig } from './elementStates.js'
  * This component is GENERIC — it receives a pre-computed state enum
  * and has no knowledge of which algorithm is running.
  *
+ * ── Two orthogonal size concepts ─────────────────────────────────────────
+ *
+ *  1. VALUE SIZE  (bubblePx prop)
+ *     Permanent visual representation of magnitude.
+ *     Computed by the parent from the dataset's min/max range.
+ *     Applied as inline width/height so it belongs to the value, not the slot.
+ *
+ *  2. ACTIVE STATE SCALE  (cfg.wrapper — CSS scale/translate transforms)
+ *     Temporary emphasis when comparing / swapping.
+ *     Applied as a CSS transform multiplier on top of the base size.
+ *     A 50px bubble at scale-110 → ~55px, a 80px bubble → ~88px.
+ *     The larger bubble always remains visibly larger. ✓
+ *
  * Props:
  *   value     {number|string}  - The displayed value
  *   index     {number}         - Logical array index (shown below bubble)
  *   state     {string}         - One of ELEMENT_STATE.*
  *   stableId  {string}         - data-* attribute for DOM identification
- *   size      {string}         - 'sm' | 'md' (default 'md')
+ *   bubblePx  {number|null}    - Explicit bubble diameter in px (value-proportional).
+ *                                When null, falls back to size-based Tailwind classes.
+ *   size      {string}         - Fallback sizing tier: 'sm' | 'md' (default 'md')
  */
 const ArrayElement = ({
   value,
   index,
   state = ELEMENT_STATE.NORMAL,
   stableId,
+  bubblePx = null,
   size = 'md'
 }) => {
   const cfg = getElementStyleConfig(state)
 
-  // Bubble diameter — responsive via size prop
-  const bubbleSizeCls = size === 'sm'
-    ? 'w-11 h-11 sm:w-12 sm:h-12'
-    : 'w-14 h-14 sm:w-16 sm:h-16 lg:w-[4.5rem] lg:h-[4.5rem]'
+  // ── Value font size — scales with bubble diameter ─────────────────────
+  // Chosen to ensure the label fits comfortably for values like "-999".
+  const valueFontCls = (() => {
+    if (bubblePx === null) {
+      return size === 'sm' ? 'text-base sm:text-lg' : 'text-lg sm:text-xl lg:text-2xl'
+    }
+    if (bubblePx < 48) return 'text-xs'
+    if (bubblePx < 58) return 'text-sm'
+    if (bubblePx < 70) return 'text-base'
+    if (bubblePx < 82) return 'text-lg'
+    return 'text-xl'
+  })()
 
-  const valueSizeCls = size === 'sm'
-    ? 'text-base sm:text-lg'
-    : 'text-lg sm:text-xl lg:text-2xl'
+  // ── Bubble dimensions ─────────────────────────────────────────────────
+  // If bubblePx is provided use inline styles; otherwise fall back to Tailwind.
+  const bubbleSizeCls = bubblePx === null
+    ? (size === 'sm'
+        ? 'w-11 h-11 sm:w-12 sm:h-12'
+        : 'w-14 h-14 sm:w-16 sm:h-16 lg:w-[4.5rem] lg:h-[4.5rem]')
+    : ''
+
+  const bubbleSizeStyle = bubblePx !== null
+    ? { width: bubblePx, height: bubblePx, flexShrink: 0 }
+    : {}
 
   return (
     <div
@@ -61,18 +93,18 @@ const ArrayElement = ({
       </div>
 
       {/*
-        Bubble wrapper — handles scale + lift transforms.
+        Bubble wrapper — handles ACTIVE STATE SCALE + lift transforms.
         Transition is applied here so transforms animate smoothly.
+
         The FLIP animation on the parent slot div uses translateX.
-        These are separate transform properties and do not conflict.
+        The active-state scale lives here as a CSS transform.
+        The base size lives on the inner bubble div as inline width/height.
+        All three are orthogonal and do not conflict.
       */}
       <div
-        className={`
-          transition-transform duration-300 ease-out
-          ${cfg.wrapper}
-        `}
+        className={`transition-transform duration-300 ease-out ${cfg.wrapper}`}
       >
-        {/* Circular bubble body */}
+        {/* Circular bubble body — VALUE SIZE applied here via inline style */}
         <div
           className={`
             relative flex items-center justify-center
@@ -81,6 +113,7 @@ const ArrayElement = ({
             ${bubbleSizeCls}
             ${cfg.bubble}
           `}
+          style={bubbleSizeStyle}
         >
           {/* Specular highlight — top-left inner shine for depth illusion */}
           <span
@@ -89,7 +122,7 @@ const ArrayElement = ({
           />
 
           {/* Value label */}
-          <span className={`relative z-10 leading-none tabular-nums ${valueSizeCls} ${cfg.valueCls}`}>
+          <span className={`relative z-10 leading-none tabular-nums ${valueFontCls} ${cfg.valueCls}`}>
             {value}
           </span>
         </div>

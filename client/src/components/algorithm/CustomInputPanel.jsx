@@ -25,7 +25,7 @@ const CustomInputPanel = ({
     const parsed = parseArrayInput(textToApply, {
       minLength: 2,
       maxLength: 15,
-      minValue: 1,
+      minValue: -999,
       maxValue: 999
     })
 
@@ -79,7 +79,7 @@ const CustomInputPanel = ({
             Custom Input
           </h3>
           <p className="mt-1 text-sm text-slate-300">
-            Enter 2–15 comma-separated integers (1–999) or generate a random dataset.
+            Enter 2–15 comma-separated integers (−999 to 999) or generate a random dataset.
           </p>
         </div>
 

@@ -9,15 +9,15 @@ import { createVisualizationStep } from '../../components/visualizer/visualizati
  * values only take effect when the base speed is faster than the hint.
  *
  * At 1x (1400ms base) most steps are already long enough. At 1.5x / 2x
- * these hints ensure critical moments (COMPARE, SWAP) still have enough
- * time for the learner to perceive what happened.
+ * these hints ensure critical moments (COMPARE, SWAP, PASS COMPLETE) still
+ * have enough time for the learner to perceive what happened.
  */
 const STEP_DURATIONS = {
-  START:    1000,
-  COMPARE:  1100,   // must be visible long enough to read the comparison
-  SWAP:     1400,   // swap animation is ~700ms; keep total dwell at 1400ms
-  SORTED:    900,   // brief pause to register "element is finalized"
-  COMPLETE: 1800    // satisfying ending pause
+  START:    1200,
+  COMPARE:  1400,   // enough time to read comparison + decision
+  SWAP:     1600,   // swap animation ~800ms; keep dwell at 1600ms
+  SORTED:   1800,   // pass completion pause — learner needs to register this
+  COMPLETE: 2200    // satisfying ending
 }
 
 /**
@@ -74,7 +74,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         title: 'Starting Bubble Sort',
         explanation:
           'Bubble Sort repeatedly compares adjacent elements and swaps them when they are in the wrong order.',
-        metadata: { suggestedDuration: STEP_DURATIONS.START, pass: 0, totalElements: n }
+        metadata: { suggestedDuration: STEP_DURATIONS.START, pass: 0, totalElements: n, totalPasses: 1 }
       }),
       createVisualizationStep({
         stepIndex: 1,
@@ -84,7 +84,15 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         sortedIndices: [0],
         title: 'Single Element Sorted',
         explanation: `The array has only one element (${arr[0]}), which is already in its sorted position.`,
-        metadata: { suggestedDuration: STEP_DURATIONS.SORTED, pass: 1 }
+        metadata: {
+          suggestedDuration: STEP_DURATIONS.SORTED,
+          pass: 1,
+          totalPasses: 1,
+          finalizedIndex: 0,
+          finalizedValue: arr[0],
+          passComplete: true,
+          bubbleMessage: `${arr[0]} is already in its final position`
+        }
       }),
       createVisualizationStep({
         stepIndex: 2,
@@ -136,7 +144,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
     title: 'Starting Bubble Sort',
     explanation:
       'Bubble Sort works by repeatedly comparing adjacent elements and swapping them if they are in the wrong order. Each pass "bubbles" the largest unsorted value to its final position at the end.',
-    metadata: { pass: 0, totalElements: n }
+    metadata: { pass: 0, totalElements: n, totalPasses: n - 1 }
   })
 
   // 2. Outer sorting passes
@@ -150,6 +158,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
       totalComparisons += 1
 
       // A. COMPARE step
+      const decision = leftVal > rightVal ? 'swap' : leftVal === rightVal ? 'equal' : 'no-swap'
       let compareExplanation = ''
       if (leftVal > rightVal) {
         compareExplanation = `${leftVal} is greater than ${rightVal}, so these two elements must swap. The larger value will move one step closer to its final position.`
@@ -165,10 +174,12 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         explanation: compareExplanation,
         metadata: {
           pass: passNumber,
+          totalPasses: n - 1,
           comparisonIndex: j,
           leftValue: leftVal,
           rightValue: rightVal,
-          willSwap: leftVal > rightVal
+          willSwap: leftVal > rightVal,
+          decision
         }
       })
 
@@ -180,15 +191,21 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         swapped = true
         totalSwaps += 1
 
+        // At this point: arr[j] = rightVal (smaller, moved left), arr[j+1] = temp (larger, moved right)
         addStep(STEP_TYPES.SWAP, {
           indices: [j, j + 1],
           title: `Swapped ${temp} ↔ ${arr[j]}`,
           explanation: `${temp} moved right and ${arr[j]} moved left. The larger value (${temp}) continues bubbling toward its final position.`,
           metadata: {
             pass: passNumber,
+            totalPasses: n - 1,
             comparisonIndex: j,
             leftValue: arr[j],
-            rightValue: arr[j + 1]
+            rightValue: arr[j + 1],
+            swapDetail: {
+              movedRight: temp,   // the larger value that moved right
+              movedLeft: arr[j]   // the smaller value that moved left
+            }
           }
         })
       }
@@ -207,8 +224,11 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
       explanation: `Pass ${passNumber} complete. ${arr[lastUnsortedIndex]} has bubbled all the way to index ${lastUnsortedIndex} — it will not move again. The sorted region has grown by one element.`,
       metadata: {
         pass: passNumber,
+        totalPasses: n - 1,
         finalizedIndex: lastUnsortedIndex,
-        finalizedValue: arr[lastUnsortedIndex]
+        finalizedValue: arr[lastUnsortedIndex],
+        passComplete: true,
+        bubbleMessage: `${arr[lastUnsortedIndex]} bubbled to its final position`
       }
     })
 
@@ -228,6 +248,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
           explanation: `No swaps occurred during Pass ${passNumber}. This proves all remaining elements are already in their correct positions. Bubble Sort exits early.`,
           metadata: {
             pass: passNumber,
+            totalPasses: n - 1,
             earlyTermination: true
           }
         })

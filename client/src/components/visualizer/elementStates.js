@@ -83,7 +83,7 @@ export const getElementStyleConfig = (state) => {
     case ELEMENT_STATE.SWAPPING:
       return {
         // Rose: "movement, exchange"
-        wrapper: 'scale-115',
+        wrapper: 'scale-110 -translate-y-3',
         bubble: [
           'border-2 border-rose-400/90',
           'bg-[radial-gradient(ellipse_at_30%_30%,_#fce7f3_0%,_#be123c_55%,_#4c0519_100%)]',

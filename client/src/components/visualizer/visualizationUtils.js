@@ -89,13 +89,13 @@ const getStepDefaultTitle = (type, indices = []) => {
  * @param {Object} [options]
  * @param {number} [options.minLength=2]
  * @param {number} [options.maxLength=15]
- * @param {number} [options.minValue=1]
+ * @param {number} [options.minValue=-999]
  * @param {number} [options.maxValue=999]
  * @returns {{ success: boolean, data: number[], error: string | null }}
  */
 export const parseArrayInput = (
   inputString = '',
-  { minLength = 2, maxLength = 15, minValue = 1, maxValue = 999 } = {}
+  { minLength = 2, maxLength = 15, minValue = -999, maxValue = 999 } = {}
 ) => {
   if (!inputString || typeof inputString !== 'string' || !inputString.trim()) {
     return {

@@ -1,14 +1,14 @@
-import { getStepTypeBadgeConfig } from '../visualizer/visualizationUtils.js'
 import { STEP_TYPES } from '../visualizer/visualizationTypes.js'
+import { getStepTypeBadgeConfig } from '../visualizer/visualizationUtils.js'
 
 /**
- * Step Explanation Component
+ * Step Explanation Component — V3
  *
- * Displays human-readable narrative, active step type, and contextual
- * "why" information derived from step metadata.
+ * Concise, punchy explanations. The DecisionPanel in ArrayVisualizer
+ * handles the primary visual teaching on the simulation stage. This panel
+ * provides the secondary narrative and step counter.
  *
- * This component reads only generic step fields and the metadata object.
- * It does NOT contain algorithm-specific logic.
+ * Reads only generic step fields and metadata. Zero algorithm logic.
  */
 const StepExplanation = ({
   step = null,
@@ -22,17 +22,10 @@ const StepExplanation = ({
   const stepNumber = totalSteps > 0 ? currentStep + 1 : 0
   const metadata = step?.metadata ?? {}
 
-  // ── Comparison context: inline reason why two values are compared ──
   const hasComparisonContext =
     type === STEP_TYPES.COMPARE &&
     metadata.leftValue !== undefined &&
     metadata.rightValue !== undefined
-
-  // ── Swap context ──
-  const hasSwapContext = type === STEP_TYPES.SWAP
-
-  // ── Pass context ──
-  const hasPassContext = metadata.pass > 0 && !isCompleted
 
   return (
     <section
@@ -41,109 +34,86 @@ const StepExplanation = ({
     >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 id="step-explanation-title" className="text-lg font-bold text-white">
-          Step Explanation
+        <h3 id="step-explanation-title" className="text-base font-bold text-white">
+          Step Detail
         </h3>
 
         {hasStep && (
           <div className="flex items-center gap-2">
-            {hasPassContext && (
-              <span className="rounded-full border border-cyan-400/25 bg-cyan-950/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-cyan-300">
+            {metadata.pass > 0 && !isCompleted && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Pass {metadata.pass}
+                {metadata.totalPasses ? ` / ${metadata.totalPasses}` : ''}
               </span>
             )}
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${badge.bgColor} ${badge.borderColor} ${badge.textColor}`}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge.bgColor} ${badge.borderColor} ${badge.textColor}`}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${badge.dotColor}`} />
+              <span className={`h-1 w-1 rounded-full ${badge.dotColor}`} />
               {badge.label}
             </span>
           </div>
         )}
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-3 space-y-3">
         {hasStep ? (
           <>
-            {/* Step counter */}
-            <div className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-slate-950/50 px-4 py-2.5">
-              <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
-                Step {stepNumber} of {totalSteps}
+            {/* Step counter — small, secondary */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Step {stepNumber} / {totalSteps}
               </span>
               {step.indices && step.indices.length > 0 && (
-                <span className="text-xs text-slate-400">
-                  Indices:&nbsp;
-                  <span className="font-mono text-slate-200">
-                    [{step.indices.join(', ')}]
-                  </span>
+                <span className="text-[10px] text-slate-600">
+                  idx [{step.indices.join(', ')}]
                 </span>
               )}
             </div>
 
-            {/* Title + explanation */}
-            <div className="rounded-xl border border-white/8 bg-slate-950/60 p-4">
-              <p className="text-sm font-bold text-white">{step.title || 'Step in progress'}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-300">
-                {step.explanation || 'No detailed description for this step.'}
-              </p>
-            </div>
+            {/* Title — bold, concise */}
+            <p className="text-sm font-bold text-white">{step.title || 'Step in progress'}</p>
 
-            {/* ── Comparison "why" panel ── */}
+            {/* Explanation — concise educational narrative */}
+            <p className="text-xs leading-relaxed text-slate-400">
+              {step.explanation || ''}
+            </p>
+
+            {/* ── COMPARE: inline decision recap ── */}
             {hasComparisonContext && (
-              <div className="rounded-xl border border-amber-400/20 bg-amber-950/25 p-4">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-amber-400/70">
-                  Comparison
-                </p>
-                <div className="flex items-center gap-3">
-                  {/* Left value */}
-                  <span className="rounded-lg border border-amber-400/30 bg-amber-950/50 px-3 py-1.5 font-mono text-base font-black text-amber-200">
+              <div className="rounded-xl border border-amber-400/15 bg-amber-950/15 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm font-black text-amber-200">
                     {metadata.leftValue}
                   </span>
-                  {/* Operator */}
-                  <span className="text-sm font-black text-amber-300">
+                  <span className="text-sm font-black text-amber-400">
                     {metadata.willSwap ? '>' : metadata.leftValue === metadata.rightValue ? '=' : '<'}
                   </span>
-                  {/* Right value */}
-                  <span className="rounded-lg border border-amber-400/30 bg-amber-950/50 px-3 py-1.5 font-mono text-base font-black text-amber-200">
+                  <span className="font-mono text-sm font-black text-amber-200">
                     {metadata.rightValue}
                   </span>
-                  {/* Outcome verdict */}
                   <span
-                    className={`
-                      ml-auto rounded-lg border px-2.5 py-1 text-xs font-bold uppercase tracking-wide
-                      ${metadata.willSwap
-                        ? 'border-rose-400/40 bg-rose-950/50 text-rose-300'
-                        : 'border-slate-600/40 bg-slate-900/60 text-slate-400'
-                      }
-                    `}
+                    className={`ml-auto rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
+                      metadata.willSwap
+                        ? 'border-rose-400/30 bg-rose-950/40 text-rose-300'
+                        : 'border-slate-700 bg-slate-900/60 text-slate-500'
+                    }`}
                   >
-                    {metadata.willSwap ? 'Will Swap' : 'No Swap'}
+                    {metadata.willSwap ? 'Swap' : 'Keep'}
                   </span>
                 </div>
               </div>
             )}
 
-            {/* ── Swap context panel ── */}
-            {hasSwapContext && metadata.leftValue !== undefined && (
-              <div className="rounded-xl border border-rose-400/20 bg-rose-950/20 p-4">
-                <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-rose-400/70">
-                  Swap Complete
-                </p>
-                <p className="text-sm text-rose-200">
-                  Elements at indices [{step.indices?.join('] and [')}] have exchanged positions.
-                  The larger value is now one step closer to its final sorted position.
-                </p>
-              </div>
-            )}
-
             {/* ── Completion banner ── */}
             {isCompleted && (
-              <div className="rounded-xl border border-emerald-400/30 bg-emerald-900/20 p-4">
-                <p className="text-sm font-semibold text-emerald-300">
-                  ✦ Algorithm complete.{' '}
+              <div className="rounded-xl border border-emerald-400/25 bg-emerald-900/15 p-3">
+                <p className="text-xs font-semibold text-emerald-300">
+                  ✦ Complete —{' '}
                   {metadata.totalComparisons !== undefined && (
                     <>
-                      Finished in {metadata.totalComparisons} comparison{metadata.totalComparisons !== 1 ? 's' : ''} and {metadata.totalSwaps} swap{metadata.totalSwaps !== 1 ? 's' : ''}.
+                      {metadata.totalComparisons} comparison{metadata.totalComparisons !== 1 ? 's' : ''},{' '}
+                      {metadata.totalSwaps} swap{metadata.totalSwaps !== 1 ? 's' : ''}.
                     </>
                   )}
                 </p>
@@ -152,16 +122,10 @@ const StepExplanation = ({
           </>
         ) : (
           /* ── Idle state ── */
-          <div className="rounded-xl border border-white/8 bg-slate-950/60 p-6 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-              Ready
-            </p>
-            <p className="mt-2 text-base font-semibold text-white">
-              No active step
-            </p>
-            <p className="mt-1 text-sm text-slate-400">
-              Press Play or use Next to start the visualization.
-            </p>
+          <div className="rounded-xl border border-white/8 bg-slate-950/60 p-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Ready</p>
+            <p className="mt-1.5 text-sm font-semibold text-white">Press Play to begin</p>
+            <p className="mt-1 text-xs text-slate-500">or use Next to step through manually</p>
           </div>
         )}
       </div>
