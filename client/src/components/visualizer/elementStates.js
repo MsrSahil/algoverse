@@ -69,7 +69,7 @@ export const getElementStyleConfig = (state) => {
     case ELEMENT_STATE.COMPARING:
       return {
         // Amber: "attention, look here"
-        wrapper: 'scale-110 -translate-y-2',   // lift upward
+        wrapper: 'scale-[1.05] -translate-y-2',   // subtle lift — 5% scale keeps size hierarchy intact
         bubble: [
           'border-2 border-amber-400/90',
           'bg-[radial-gradient(ellipse_at_30%_30%,_#fef3c7_0%,_#b45309_60%,_#78350f_100%)]',
@@ -83,7 +83,7 @@ export const getElementStyleConfig = (state) => {
     case ELEMENT_STATE.SWAPPING:
       return {
         // Rose: "movement, exchange"
-        wrapper: 'scale-110 -translate-y-3',
+        wrapper: 'scale-[1.05] -translate-y-3',  // subtle lift — 5% scale keeps size hierarchy intact
         bubble: [
           'border-2 border-rose-400/90',
           'bg-[radial-gradient(ellipse_at_30%_30%,_#fce7f3_0%,_#be123c_55%,_#4c0519_100%)]',
@@ -125,7 +125,7 @@ export const getElementStyleConfig = (state) => {
     case ELEMENT_STATE.HIGHLIGHTED:
       return {
         // Violet: "focus / pivot"
-        wrapper: 'scale-110',
+        wrapper: 'scale-[1.05]',
         bubble: [
           'border-2 border-violet-400/80',
           'bg-[radial-gradient(ellipse_at_30%_30%,_#ede9fe_0%,_#6d28d9_55%,_#1e0938_100%)]',

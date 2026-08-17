@@ -2,10 +2,8 @@ import { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import AlgorithmHeader from '../../components/algorithm/AlgorithmHeader'
 import AlgorithmOverview from '../../components/algorithm/AlgorithmOverview'
-import VisualizationWorkspace from '../../components/algorithm/VisualizationWorkspace'
-import VisualizationControls from '../../components/algorithm/VisualizationControls'
+import VisualizationLab from '../../components/algorithm/VisualizationLab'
 import CustomInputPanel from '../../components/algorithm/CustomInputPanel'
-import StepExplanation from '../../components/algorithm/StepExplanation'
 import ComplexityCard from '../../components/algorithm/ComplexityCard'
 import AlgorithmExplanation from '../../components/algorithm/AlgorithmExplanation'
 import CodeSection from '../../components/algorithm/CodeSection'
@@ -87,11 +85,6 @@ const AlgorithmDetailsPage = () => {
     totalSteps,
     isPlaying,
     isCompleted,
-    canPlay,
-    canPause,
-    canPrevious,
-    canNext,
-    canRestart,
     speed,
     progressPercentage,
     play,
@@ -110,22 +103,19 @@ const AlgorithmDetailsPage = () => {
     if (!algorithm?.relatedAlgorithms?.length) {
       return []
     }
-
     return algorithm.relatedAlgorithms
       .map((relatedSlug) => algorithmLookupBySlug[relatedSlug])
       .filter(Boolean)
   }, [algorithm])
 
   const currentIndex = useMemo(() => {
-    if (!algorithm) {
-      return -1
-    }
-
+    if (!algorithm) return -1
     return algorithms.findIndex((item) => item.slug === algorithm.slug)
   }, [algorithm])
 
   const previousAlgorithm = currentIndex > 0 ? algorithms[currentIndex - 1] : null
-  const nextAlgorithm = currentIndex >= 0 && currentIndex < algorithms.length - 1 ? algorithms[currentIndex + 1] : null
+  const nextAlgorithm =
+    currentIndex >= 0 && currentIndex < algorithms.length - 1 ? algorithms[currentIndex + 1] : null
 
   if (!algorithm) {
     return <NotFound />
@@ -143,23 +133,33 @@ const AlgorithmDetailsPage = () => {
 
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+
+        {/* ── Page header ─────────────────────────────────────────────── */}
         <AlgorithmHeader
           algorithm={algorithm}
           isFavorite={isFavorite}
           isComplete={isComplete}
-          onToggleFavorite={() => setIsFavorite((previousState) => !previousState)}
-          onToggleComplete={() => setIsComplete((previousState) => !previousState)}
+          onToggleFavorite={() => setIsFavorite((s) => !s)}
+          onToggleComplete={() => setIsComplete((s) => !s)}
         />
 
+        {/* ── Algorithm overview (condensed above the lab) ─────────────── */}
         <AlgorithmOverview
           overview={algorithm.overview}
           fallbackDescription={algorithm.description}
           keyIdea={algorithm.keyIdea}
         />
 
-        {/* Visualization Workspace */}
-        <VisualizationWorkspace
+        {/* ══ VISUALIZATION LAB ════════════════════════════════════════════
+            Single unified component with three fixed-height zones:
+              Zone 1 — Simulation stage (bubbles, swap animation, states)
+              Zone 2 — Learning insight strip (COMPARE / SWAP / SORTED text)
+              Zone 3 — Control dock (Prev, Restart, Play, Next + scrubber)
+
+            None of these zones change height during playback.
+            ═══════════════════════════════════════════════════════════════ */}
+        <VisualizationLab
           algorithm={algorithm}
           currentStepData={currentStepData}
           currentStep={currentStep}
@@ -167,19 +167,6 @@ const AlgorithmDetailsPage = () => {
           progressPercentage={progressPercentage}
           isPlaying={isPlaying}
           isCompleted={isCompleted}
-          onGoToStep={goToStep}
-          customArray={customArray}
-        />
-
-        {/* Visualization Controls */}
-        <VisualizationControls
-          isPlaying={isPlaying}
-          isCompleted={isCompleted}
-          canPlay={canPlay}
-          canPause={canPause}
-          canPrevious={canPrevious}
-          canNext={canNext}
-          canRestart={canRestart}
           speed={speed}
           onPlay={play}
           onPause={pause}
@@ -187,11 +174,13 @@ const AlgorithmDetailsPage = () => {
           onNext={next}
           onRestart={restart}
           onSpeedChange={setSpeed}
+          onGoToStep={goToStep}
+          customArray={customArray}
           disabled={isComingSoon || totalSteps <= 1}
           isComingSoon={isComingSoon}
         />
 
-        {/* Custom Input Panel */}
+        {/* ── Custom Input Panel ───────────────────────────────────────── */}
         <CustomInputPanel
           initialArray={customArray}
           onApplyArray={handleApplyArray}
@@ -200,14 +189,11 @@ const AlgorithmDetailsPage = () => {
           isComingSoon={isComingSoon}
         />
 
+        {/* ── Reference content ─────────────────────────────────────────
+            Sits below the lab — regular document flow, no height sensitivity.
+            ─────────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="space-y-6 xl:col-span-8">
-            <StepExplanation
-              step={currentStepData}
-              currentStep={currentStep}
-              totalSteps={totalSteps}
-              isCompleted={isCompleted}
-            />
             <AlgorithmExplanation algorithm={algorithm} />
             <CodeSection codeImplementations={algorithm.codeImplementations} />
             <DryRunSection dryRun={algorithm.dryRun} />
