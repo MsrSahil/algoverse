@@ -2,6 +2,25 @@ import { STEP_TYPES } from '../../components/visualizer/visualizationTypes.js'
 import { createVisualizationStep } from '../../components/visualizer/visualizationUtils.js'
 
 /**
+ * Educational step durations (ms) for Bubble Sort.
+ *
+ * These are HINTS passed as metadata.suggestedDuration. The generic engine
+ * uses Math.max(speedConfigDelay, suggestedDuration) when playing, so these
+ * values only take effect when the base speed is faster than the hint.
+ *
+ * At 1x (1400ms base) most steps are already long enough. At 1.5x / 2x
+ * these hints ensure critical moments (COMPARE, SWAP) still have enough
+ * time for the learner to perceive what happened.
+ */
+const STEP_DURATIONS = {
+  START:    1000,
+  COMPARE:  1100,   // must be visible long enough to read the comparison
+  SWAP:     1400,   // swap animation is ~700ms; keep total dwell at 1400ms
+  SORTED:    900,   // brief pause to register "element is finalized"
+  COMPLETE: 1800    // satisfying ending pause
+}
+
+/**
  * Pure, deterministic Bubble Sort visualization step generator.
  *
  * Simulates Bubble Sort step-by-step and produces a sequence of immutable
@@ -9,7 +28,7 @@ import { createVisualizationStep } from '../../components/visualizer/visualizati
  * for the generic visualization engine.
  *
  * @param {number[]} input - Array of numbers to sort
- * @param {Object} [options] - Additional generator options
+ * @param {Object} [_options] - Additional generator options (reserved)
  * @returns {Array} List of VisualizationStep objects
  */
 export const generateBubbleSortSteps = (input = [], _options = {}) => {
@@ -23,7 +42,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         indices: [],
         sortedIndices: [],
         title: 'Empty Array',
-        explanation: 'No elements provided to sort.'
+        explanation: 'No elements provided to sort.',
+        metadata: { suggestedDuration: STEP_DURATIONS.START }
       }),
       createVisualizationStep({
         stepIndex: 1,
@@ -32,7 +52,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         indices: [],
         sortedIndices: [],
         title: 'Bubble Sort Complete',
-        explanation: 'The empty array is trivially sorted.'
+        explanation: 'The empty array is trivially sorted.',
+        metadata: { suggestedDuration: STEP_DURATIONS.COMPLETE }
       })
     ]
   }
@@ -52,7 +73,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         sortedIndices: [],
         title: 'Starting Bubble Sort',
         explanation:
-          'Bubble Sort repeatedly compares adjacent elements and swaps them when they are in the wrong order.'
+          'Bubble Sort repeatedly compares adjacent elements and swaps them when they are in the wrong order.',
+        metadata: { suggestedDuration: STEP_DURATIONS.START, pass: 0, totalElements: n }
       }),
       createVisualizationStep({
         stepIndex: 1,
@@ -61,7 +83,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         indices: [0],
         sortedIndices: [0],
         title: 'Single Element Sorted',
-        explanation: `The array has only one element (${arr[0]}), which is already in its sorted position.`
+        explanation: `The array has only one element (${arr[0]}), which is already in its sorted position.`,
+        metadata: { suggestedDuration: STEP_DURATIONS.SORTED, pass: 1 }
       }),
       createVisualizationStep({
         stepIndex: 2,
@@ -70,7 +93,13 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         indices: [],
         sortedIndices: [0],
         title: 'Bubble Sort Complete',
-        explanation: 'The array is fully sorted. Bubble Sort has finished.'
+        explanation: 'The array is fully sorted. Bubble Sort has finished.',
+        metadata: {
+          suggestedDuration: STEP_DURATIONS.COMPLETE,
+          totalComparisons: 0,
+          totalSwaps: 0,
+          finalArray: [...arr]
+        }
       })
     ]
   }
@@ -94,6 +123,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
         metadata: {
           totalComparisons,
           totalSwaps,
+          suggestedDuration: STEP_DURATIONS[type] ?? STEP_DURATIONS.START,
           ...metadata
         }
       })
@@ -105,7 +135,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
     indices: [],
     title: 'Starting Bubble Sort',
     explanation:
-      'Bubble Sort repeatedly compares adjacent elements and swaps them when they are in the wrong order.',
+      'Bubble Sort works by repeatedly comparing adjacent elements and swapping them if they are in the wrong order. Each pass "bubbles" the largest unsorted value to its final position at the end.',
     metadata: { pass: 0, totalElements: n }
   })
 
@@ -122,16 +152,16 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
       // A. COMPARE step
       let compareExplanation = ''
       if (leftVal > rightVal) {
-        compareExplanation = `Comparing ${leftVal} at index ${j} and ${rightVal} at index ${j + 1}. Since ${leftVal} is greater than ${rightVal}, these elements need to be swapped.`
+        compareExplanation = `${leftVal} is greater than ${rightVal}, so these two elements must swap. The larger value will move one step closer to its final position.`
       } else if (leftVal === rightVal) {
-        compareExplanation = `Comparing ${leftVal} at index ${j} and ${rightVal} at index ${j + 1}. Both elements are equal (${leftVal}), so no swap is needed.`
+        compareExplanation = `Both elements equal ${leftVal}. Equal elements do not need to swap — they are already in relative order.`
       } else {
-        compareExplanation = `Comparing ${leftVal} at index ${j} and ${rightVal} at index ${j + 1}. No swap is needed because ${leftVal} is smaller than ${rightVal}.`
+        compareExplanation = `${leftVal} is less than ${rightVal}, so no swap is needed. These two are already in the correct relative order.`
       }
 
       addStep(STEP_TYPES.COMPARE, {
         indices: [j, j + 1],
-        title: `Comparing index ${j} (${leftVal}) and index ${j + 1} (${rightVal})`,
+        title: `Comparing ${leftVal} and ${rightVal}`,
         explanation: compareExplanation,
         metadata: {
           pass: passNumber,
@@ -152,8 +182,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
 
         addStep(STEP_TYPES.SWAP, {
           indices: [j, j + 1],
-          title: `Swapped ${temp} and ${arr[j]}`,
-          explanation: `Swapped ${temp} and ${arr[j]} because ${temp} was greater than ${arr[j]}.`,
+          title: `Swapped ${temp} ↔ ${arr[j]}`,
+          explanation: `${temp} moved right and ${arr[j]} moved left. The larger value (${temp}) continues bubbling toward its final position.`,
           metadata: {
             pass: passNumber,
             comparisonIndex: j,
@@ -173,8 +203,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
 
     addStep(STEP_TYPES.SORTED, {
       indices: [lastUnsortedIndex],
-      title: `Element ${arr[lastUnsortedIndex]} finalized at index ${lastUnsortedIndex}`,
-      explanation: `Pass ${passNumber} complete. The largest unsorted element (${arr[lastUnsortedIndex]}) has bubbled to its final position at index ${lastUnsortedIndex}.`,
+      title: `${arr[lastUnsortedIndex]} is in its final position`,
+      explanation: `Pass ${passNumber} complete. ${arr[lastUnsortedIndex]} has bubbled all the way to index ${lastUnsortedIndex} — it will not move again. The sorted region has grown by one element.`,
       metadata: {
         pass: passNumber,
         finalizedIndex: lastUnsortedIndex,
@@ -182,7 +212,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
       }
     })
 
-    // Early termination optimization: if no swaps occurred during the entire pass
+    // Early termination optimization
     if (!swapped) {
       for (let k = 0; k < n; k += 1) {
         if (!sortedIndices.includes(k)) {
@@ -194,8 +224,8 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
       if (i < n - 2) {
         addStep(STEP_TYPES.SORTED, {
           indices: [],
-          title: `Early Termination: Array Already Sorted`,
-          explanation: `No swaps were performed during Pass ${passNumber}. This guarantees that all remaining elements are already sorted.`,
+          title: 'Early Termination — Already Sorted',
+          explanation: `No swaps occurred during Pass ${passNumber}. This proves all remaining elements are already in their correct positions. Bubble Sort exits early.`,
           metadata: {
             pass: passNumber,
             earlyTermination: true
@@ -218,7 +248,7 @@ export const generateBubbleSortSteps = (input = [], _options = {}) => {
   addStep(STEP_TYPES.COMPLETE, {
     indices: [],
     title: 'Bubble Sort Complete',
-    explanation: `The array is fully sorted. Bubble Sort finished in ${totalComparisons} comparisons and ${totalSwaps} swaps.`,
+    explanation: `Every element has reached its final position. Bubble Sort finished with ${totalComparisons} comparison${totalComparisons !== 1 ? 's' : ''} and ${totalSwaps} swap${totalSwaps !== 1 ? 's' : ''}.`,
     metadata: {
       finalArray: [...arr],
       totalComparisons,

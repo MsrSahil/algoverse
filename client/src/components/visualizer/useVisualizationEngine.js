@@ -146,7 +146,16 @@ export const useVisualizationEngine = ({
       return
     }
 
-    const delay = SPEED_CONFIG[speed] || SPEED_CONFIG[DEFAULT_SPEED]
+    // Base delay from speed config
+    const baseDelay = SPEED_CONFIG[speed] || SPEED_CONFIG[DEFAULT_SPEED]
+
+    // Optional per-step educational minimum from step metadata.
+    // Generators can hint "this step needs at least Nms to be understood".
+    // The engine takes whichever is larger so fast speeds never rush critical steps.
+    const stepHint = steps[currentStep]?.metadata?.suggestedDuration
+    const delay = (typeof stepHint === 'number' && stepHint > 0)
+      ? Math.max(baseDelay, stepHint)
+      : baseDelay
 
     timerRef.current = setTimeout(() => {
       setCurrentStep((prev) => {
@@ -164,7 +173,7 @@ export const useVisualizationEngine = ({
         timerRef.current = null
       }
     }
-  }, [isPlaying, currentStep, totalSteps, speed])
+  }, [isPlaying, currentStep, totalSteps, speed, steps])
 
   // Unmount cleanup
   useEffect(() => {

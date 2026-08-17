@@ -1,5 +1,7 @@
 export { default as useVisualizationEngine } from './useVisualizationEngine.js'
 export { default as ArrayVisualizer } from './ArrayVisualizer.jsx'
+export { default as ArrayElement } from './ArrayElement.jsx'
 export { default as VisualizationProgress } from './VisualizationProgress.jsx'
 export * from './visualizationTypes.js'
 export * from './visualizationUtils.js'
+export * from './elementStates.js'
