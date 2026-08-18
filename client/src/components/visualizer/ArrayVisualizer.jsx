@@ -1,8 +1,7 @@
-import { useRef, useLayoutEffect, useMemo, useState, useEffect } from 'react'
+import { useRef, useLayoutEffect, useMemo } from 'react'
 import { STEP_TYPES } from './visualizationTypes.js'
 import { getElementState } from './elementStates.js'
 import ArrayElement from './ArrayElement.jsx'
-import { getPresetForViewport, getValueRange, getBubbleSizePx } from './valueScale.js'
 
 /* ─────────────────────────────────────────────────────────────────────────
    FLIP SWAP ANIMATION
@@ -20,12 +19,50 @@ const SWAP_ANIM_MS = 800
 
 /* ─────────────────────────────────────────────────────────────────────────
    VALUE-PROPORTIONAL BUBBLE SIZING
-   Handled by valueScale.js — getBubbleSizePx(value, min, max, minPx, maxPx)
-   Responsive size presets tracked in the component via useState/useEffect.
+   ─────────────────────────────────────────────────────────────────────────
+   Bubbles are sized to visually represent each element's RELATIVE MAGNITUDE
+   within the current array snapshot.
+
+   Rules enforced here:
+   ① Size belongs to the VALUE, not the index slot.
+      When value 50 moves from index 0 → index 1, it keeps the same px size.
+   ② Equal values → identical px size (no random variation).
+   ③ Negative values are handled via linear normalization across [min, max].
+      Example: [-5, 10, -2, 20]  min=-5 max=20
+        -5  → BUBBLE_MIN_PX  (42px)
+        -2  → slightly larger
+        10  → larger
+        20  → BUBBLE_MAX_PX  (88px)
+   ④ All-equal arrays (e.g. [5, 5, 5]) render at the midpoint size.
+   ⑤ Single-element arrays render at midpoint size.
+
+   Value size  ≠  Active-state scale.
+   Active-state scale (scale-110, -translate-y-2, etc.) is a CSS transform
+   multiplier applied on top. A 42px bubble at scale-110 → ~46px.
+   An 88px bubble at scale-110 → ~97px. Larger always stays larger. ✓
    ─────────────────────────────────────────────────────────────────────────*/
+const BUBBLE_MIN_PX = 42
+const BUBBLE_MAX_PX = 88
+
+/**
+ * Linear interpolation: maps a value from [minVal, maxVal] → [BUBBLE_MIN_PX, BUBBLE_MAX_PX].
+ * When all values are identical (range = 0), returns the midpoint diameter.
+ *
+ * @param {number} value   - The element's numeric value
+ * @param {number} minVal  - Dataset minimum (may be negative)
+ * @param {number} maxVal  - Dataset maximum
+ * @returns {number}       - Bubble diameter in px (integer)
+ */
+const computeBubblePx = (value, minVal, maxVal) => {
+  if (minVal === maxVal) {
+    return Math.round((BUBBLE_MIN_PX + BUBBLE_MAX_PX) / 2)
+  }
+  const t = (value - minVal) / (maxVal - minVal)   // 0..1
+  return Math.round(BUBBLE_MIN_PX + t * (BUBBLE_MAX_PX - BUBBLE_MIN_PX))
+}
+
 
 /* ─────────────────────────────────────────────────────────────────────────
-
    DECISION PANEL
    The single teaching centerpiece that changes per step type.
    Reads only from step metadata — zero algorithm logic inside.
@@ -314,24 +351,18 @@ const ArrayVisualizer = ({
 
   const n = arrayData.length
 
-  // ── 2. Responsive size preset ─────────────────────────────────────────
-  // Tracks viewport width to pick the right min/max pixel range.
-  // Updates on window resize so mobile/tablet/desktop all look proportional.
-  const [sizePreset, setSizePreset] = useState(getPresetForViewport)
-  useEffect(() => {
-    const onResize = () => setSizePreset(getPresetForViewport())
-    window.addEventListener('resize', onResize, { passive: true })
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
-  // ── 3. Value range for normalization ─────────────────────────────────
-  // O(n) single-pass via getValueRange. Stable during a sort run (bubble
-  // sort only rearranges; min/max never change between steps). Recomputes
-  // only when the user applies a new input array.
-  const { min: rangeMin, max: rangeMax } = useMemo(
-    () => getValueRange(arrayData),
-    [arrayData]
-  )
+  // ── 2. Bubble size normalization ──────────────────────────────────────
+  // Derive dataset min/max once per arrayData change.
+  // computeBubblePx() uses these to map each value → a diameter in px.
+  // Size travels with the VALUE — when a swap moves value 50 to index 1,
+  // arrayData[1] is now 50, so that slot gets the large diameter. ✓
+  const { minVal, maxVal } = useMemo(() => {
+    if (n === 0) return { minVal: 0, maxVal: 0 }
+    return {
+      minVal: Math.min(...arrayData),
+      maxVal: Math.max(...arrayData)
+    }
+  }, [arrayData, n])
 
   // ── 2. Slot refs for FLIP animation ───────────────────────────────────
   const slotRefs = useRef([])
@@ -494,7 +525,7 @@ const ArrayVisualizer = ({
                     aria-hidden="true"
                   >
                     {/* Dashed vertical separator */}
-                    <div className="flex h-full flex-col justify-center gap-[3px]">
+                    <div className="flex h-full flex-col justify-center gap-0.75">
                       {Array.from({ length: 9 }).map((_, di) => (
                         <span key={di} className="block h-1.5 w-px bg-emerald-500/25" />
                       ))}
@@ -555,7 +586,7 @@ const ArrayVisualizer = ({
                     index={slotIndex}
                     state={state}
                     stableId={`slot-${slotIndex}`}
-                    bubblePx={getBubbleSizePx(value, rangeMin, rangeMax, sizePreset.minPx, sizePreset.maxPx)}
+                    bubblePx={computeBubblePx(value, minVal, maxVal)}
                   />
                 </div>
               </div>
@@ -577,55 +608,7 @@ const ArrayVisualizer = ({
           </div>
         </div>
       )}
-
-      {/* ── Educational legend — "size = relative value" ── */}
-      {/* Appears once, always, in a single subtle line at the bottom.         */}
-      {/* Three circles of increasing diameter make the encoding self-evident. */}
-      {n > 0 && (
-        <div
-          className="flex items-center justify-center gap-3 pt-1 select-none"
-          aria-label="Visual encoding: bubble size represents relative value magnitude"
-          role="note"
-        >
-          {/* Small circle */}
-          <span className="flex items-center gap-1.5">
-            <span
-              className="inline-block rounded-full border border-white/10 bg-slate-700/50"
-              style={{ width: 10, height: 10 }}
-              aria-hidden="true"
-            />
-            <span className="text-[9px] text-slate-600 tracking-wide">small</span>
-          </span>
-
-          <span className="text-[8px] text-slate-700" aria-hidden="true">·</span>
-
-          {/* Medium circle */}
-          <span className="flex items-center gap-1.5">
-            <span
-              className="inline-block rounded-full border border-white/10 bg-slate-700/50"
-              style={{ width: 16, height: 16 }}
-              aria-hidden="true"
-            />
-            <span className="text-[9px] text-slate-600 tracking-wide">medium</span>
-          </span>
-
-          <span className="text-[8px] text-slate-700" aria-hidden="true">·</span>
-
-          {/* Large circle */}
-          <span className="flex items-center gap-1.5">
-            <span
-              className="inline-block rounded-full border border-white/10 bg-slate-700/50"
-              style={{ width: 24, height: 24 }}
-              aria-hidden="true"
-            />
-            <span className="text-[9px] text-slate-600 tracking-wide">large</span>
-          </span>
-
-          <span className="text-[9px] text-slate-700 ml-1" aria-hidden="true">— size = relative value</span>
-        </div>
-      )}
     </div>
-
   )
 }
 
