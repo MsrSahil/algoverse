@@ -1,15 +1,16 @@
 import { STEP_TYPES } from '../components/visualizer/visualizationTypes.js'
 import { createVisualizationStep } from '../components/visualizer/visualizationUtils.js'
 import { generateBubbleSortSteps } from './sorting/bubbleSort.js'
+import { generateSelectionSortSteps } from './sorting/selectionSort.js'
 
 /**
  * Central registry mapping algorithm slugs to pure step generator functions.
  * Every algorithm visualizer registers its generator function here.
  */
 export const algorithmGenerators = {
-  'bubble-sort': generateBubbleSortSteps
+  'bubble-sort': generateBubbleSortSteps,
+  'selection-sort': generateSelectionSortSteps
   // Future algorithms will be added here:
-  // 'selection-sort': generateSelectionSortSteps,
   // 'insertion-sort': generateInsertionSortSteps,
   // 'merge-sort': generateMergeSortSteps,
   // 'quick-sort': generateQuickSortSteps,
@@ -17,6 +18,7 @@ export const algorithmGenerators = {
   // 'binary-search': generateBinarySearchSteps,
   // etc.
 }
+
 
 /**
  * Retrieves the step generator for a given algorithm slug.

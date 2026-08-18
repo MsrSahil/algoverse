@@ -38,9 +38,11 @@ const ArrayElement = ({
   state = ELEMENT_STATE.NORMAL,
   stableId,
   bubblePx = null,
-  size = 'md'
+  size = 'md',
+  customBadge = null
 }) => {
   const cfg = getElementStyleConfig(state)
+  const activeBadge = customBadge || cfg.badge
 
   // ── Value font size ───────────────────────────────────────────────────
   // Two axes: bubble diameter AND string length (e.g. "-999" is 4 chars).
@@ -110,21 +112,22 @@ const ArrayElement = ({
     >
       {/* Badge row — fixed height prevents layout jump on badge appear/disappear */}
       <div className="flex h-6 items-center justify-center">
-        {cfg.badge ? (
+        {activeBadge ? (
           <span
             className={`
               inline-flex items-center rounded-full px-2 py-0.5
               text-[9px] uppercase tracking-widest
               transition-all duration-200
-              ${cfg.badge.cls}
+              ${activeBadge.cls || cfg.badge?.cls || 'bg-slate-800 text-slate-200 border border-slate-700 font-bold'}
             `}
           >
-            {cfg.badge.text}
+            {activeBadge.text || (typeof activeBadge === 'string' ? activeBadge : '')}
           </span>
         ) : (
           <span className="select-none text-[9px] opacity-0" aria-hidden="true">—</span>
         )}
       </div>
+
 
       {/*
         Bubble wrapper — owns ACTIVE STATE SCALE (5%) + lift transforms.

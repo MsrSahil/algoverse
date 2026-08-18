@@ -220,7 +220,7 @@ export const algorithms = [
     categoryGroup: 'sorting',
     difficulty: ALGORITHM_DIFFICULTY.EASY,
     description:
-      'Repeatedly selects the smallest element from the unsorted portion and places it in the correct position.',
+      'Repeatedly selects the smallest element from the unsorted portion and places it at the front of the sorted region.',
     timeComplexity: {
       best: 'O(n^2)',
       average: 'O(n^2)',
@@ -229,8 +229,169 @@ export const algorithms = [
     spaceComplexity: 'O(1)',
     estimatedTime: '12 min',
     estimatedMinutes: 12,
-    status: ALGORITHM_STATUS.COMING_SOON,
-    tags: ['sorting', 'in-place', 'beginner']
+    status: ALGORITHM_STATUS.AVAILABLE,
+    tags: ['sorting', 'in-place', 'comparison', 'beginner'],
+    keyIdea:
+      'Divide the array into sorted and unsorted regions. Find the minimum element in the unsorted region and swap it to the left boundary.',
+    overview: {
+      whatIsIt:
+        'Selection Sort is an intuitive comparison-based sorting algorithm that works by selecting the smallest element from the unsorted part of the array and swapping it into the next position of the sorted prefix.',
+      whenToUse:
+        'Use it for learning algorithm mechanics, understanding the trade-off between comparisons and swaps, and when write operations (swaps) are extremely costly compared to reads.',
+      keyIdea:
+        'Scans the unsorted region to find the true minimum, then performs at most one swap per pass to lock that element into place.'
+    },
+    explanation: {
+      howItWorks: [
+        'Set the first unsorted index as the target slot.',
+        'Assume the target slot holds the initial candidate minimum.',
+        'Scan the rest of the unsorted region to find the true minimum element.',
+        'Swap the minimum element into the target slot.',
+        'Advance the sorted boundary to the right and repeat until all elements are sorted.'
+      ],
+      stepByStep: [
+        'Initialize the sorted prefix boundary at index 0.',
+        'Find the smallest value among the unsorted elements.',
+        'Swap the smallest value with the first unsorted position.',
+        'Expand the sorted prefix by one element.',
+        'Repeat for all remaining positions.'
+      ],
+      whenToUse: [
+        'When write operations to memory or storage are significantly more expensive than reads.',
+        'When teaching or learning selection vs bubbling metaphors.',
+        'When working with small arrays where implementation simplicity is desired.'
+      ],
+      advantages: [
+        'Performs at most O(n) swaps across the entire sort (minimizes memory writes).',
+        'In-place sorting with O(1) auxiliary memory.',
+        'Predictable, consistent step-by-step execution.'
+      ],
+      disadvantages: [
+        'Always takes O(n^2) comparisons even if the input is already sorted.',
+        'Not a stable sort in its standard implementation.',
+        'Inefficient on large datasets compared to O(n log n) algorithms.'
+      ]
+    },
+    codeImplementations: {
+      javascript: `function selectionSort(arr) {
+  const result = [...arr];
+  const n = result.length;
+
+  for (let i = 0; i < n - 1; i += 1) {
+    let minIndex = i;
+
+    for (let j = i + 1; j < n; j += 1) {
+      if (result[j] < result[minIndex]) {
+        minIndex = j;
+      }
+    }
+
+    if (minIndex !== i) {
+      const temp = result[i];
+      result[i] = result[minIndex];
+      result[minIndex] = temp;
+    }
+  }
+
+  return result;
+}`,
+      python: `def selection_sort(arr):
+    result = arr[:]
+    n = len(result)
+
+    for i in range(n - 1):
+        min_index = i
+        for j in range(i + 1, n):
+            if result[j] < result[min_index]:
+                min_index = j
+
+        if min_index != i:
+            result[i], result[min_index] = result[min_index], result[i]
+
+    return result`,
+      java: `public static int[] selectionSort(int[] arr) {
+    int[] result = arr.clone();
+    int n = result.length;
+
+    for (int i = 0; i < n - 1; i++) {
+      int minIndex = i;
+
+      for (int j = i + 1; j < n; j++) {
+        if (result[j] < result[minIndex]) {
+          minIndex = j;
+        }
+      }
+
+      if (minIndex !== i) {
+        int temp = result[i];
+        result[i] = result[minIndex];
+        result[minIndex] = temp;
+      }
+    }
+
+    return result;
+}`,
+      cpp: `void selectionSort(std::vector<int>& arr) {
+  int n = static_cast<int>(arr.size());
+
+  for (int i = 0; i < n - 1; ++i) {
+    int minIndex = i;
+
+    for (int j = i + 1; j < n; ++j) {
+      if (arr[j] < arr[minIndex]) {
+        minIndex = j;
+      }
+    }
+
+    if (minIndex != i) {
+      std::swap(arr[i], arr[minIndex]);
+    }
+  }
+}`
+    },
+    dryRun: [
+      {
+        step: 'Step 0',
+        title: 'Initial array',
+        detail: '[40, 20, 60, 10, 30]'
+      },
+      {
+        step: 'Pass 1',
+        title: 'Find min in [40, 20, 60, 10, 30]',
+        detail: 'Minimum is 10 at index 3. Swap with index 0. Array becomes [10 | 20, 60, 40, 30].'
+      },
+      {
+        step: 'Pass 2',
+        title: 'Find min in [20, 60, 40, 30]',
+        detail: 'Minimum is 20 at index 1 (already in place). Array becomes [10, 20 | 60, 40, 30].'
+      },
+      {
+        step: 'Pass 3',
+        title: 'Find min in [60, 40, 30]',
+        detail: 'Minimum is 30 at index 4. Swap with index 2. Array becomes [10, 20, 30 | 40, 60].'
+      },
+      {
+        step: 'Pass 4',
+        title: 'Final element in place',
+        detail: 'Array is fully sorted: [10, 20, 30, 40, 60].'
+      }
+    ],
+    practiceProblems: [
+      {
+        title: 'Sort an Array',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Sort an array of integers using comparison-based techniques.'
+      },
+      {
+        title: 'Kth Largest Element in an Array',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Find the kth largest element in an unsorted array.'
+      }
+    ],
+    relatedAlgorithms: ['bubble-sort', 'insertion-sort', 'quick-sort', 'merge-sort'],
+    visualizationPreview: [40, 20, 60, 10, 30]
   },
   {
     id: 'insertion-sort',

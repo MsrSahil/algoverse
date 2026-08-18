@@ -10,6 +10,7 @@ export const ELEMENT_STATE = {
   SWAPPING: 'swapping',
   SORTED: 'sorted',
   HIGHLIGHTED: 'highlighted',
+  SELECTED: 'selected',
   COMPLETE: 'complete'
 }
 
@@ -17,8 +18,8 @@ export const ELEMENT_STATE = {
  * Derive the visual state of an array element at a given index
  * from the current generic visualization step.
  *
- * Algorithm-agnostic — reads only standard step schema fields:
- *   type, indices, sortedIndices, highlightedIndices
+ * Algorithm-agnostic — reads standard step schema fields:
+ *   type, indices, sortedIndices, highlightedIndices, selectedIndices
  */
 export const getElementState = (index, step) => {
   if (!step) return ELEMENT_STATE.NORMAL
@@ -27,7 +28,8 @@ export const getElementState = (index, step) => {
     type,
     indices = [],
     sortedIndices = [],
-    highlightedIndices = []
+    highlightedIndices = [],
+    selectedIndices = []
   } = step
 
   if (type === STEP_TYPES.COMPLETE) {
@@ -50,12 +52,17 @@ export const getElementState = (index, step) => {
     return ELEMENT_STATE.COMPARING
   }
 
+  if (selectedIndices.includes(index) || (type === STEP_TYPES.SELECT && indices.includes(index))) {
+    return ELEMENT_STATE.SELECTED
+  }
+
   if (highlightedIndices.includes(index) || (type === STEP_TYPES.HIGHLIGHT && indices.includes(index))) {
     return ELEMENT_STATE.HIGHLIGHTED
   }
 
   return ELEMENT_STATE.NORMAL
 }
+
 
 /**
  * Returns the style configuration for a given element visual state.
@@ -136,7 +143,22 @@ export const getElementStyleConfig = (state) => {
         badge: { text: '●', cls: 'bg-violet-950/80 text-violet-300 border border-violet-400/40 font-bold' }
       }
 
+    case ELEMENT_STATE.SELECTED:
+      return {
+        // Cyan: "selected candidate / current minimum / target"
+        wrapper: 'scale-[1.05] -translate-y-2',
+        bubble: [
+          'border-2 border-cyan-400/90',
+          'bg-[radial-gradient(ellipse_at_30%_30%,_#cffafe_0%,_#0891b2_55%,_#164e63_100%)]',
+          'shadow-[0_0_26px_rgba(34,211,238,0.55),_0_8px_24px_rgba(0,0,0,0.6)]'
+        ].join(' '),
+        valueCls: 'text-cyan-50 font-black drop-shadow-md',
+        indexCls: 'text-cyan-400/90 font-mono font-semibold',
+        badge: { text: 'SEL', cls: 'bg-cyan-950/80 text-cyan-300 border border-cyan-400/50 font-bold' }
+      }
+
     case ELEMENT_STATE.NORMAL:
+
     default:
       return {
         // Slate: resting state

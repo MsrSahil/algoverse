@@ -11,6 +11,7 @@ export const STEP_TYPES = {
   SWAP: 'SWAP',
   OVERWRITE: 'OVERWRITE',
   HIGHLIGHT: 'HIGHLIGHT',
+  SELECT: 'SELECT',
   SORTED: 'SORTED',
   CHECK: 'CHECK',
   FOUND: 'FOUND',
@@ -61,3 +62,17 @@ export const VISUALIZER_TYPES = {
   QUEUE: 'queue',
   LINKED_LIST: 'linked-list'
 }
+
+/**
+ * Generic sorted boundary direction identifiers for array visualizers.
+ *
+ * - RIGHT: Sorted region builds from the right end (e.g. Bubble Sort)
+ * - LEFT:  Sorted region builds from the left end (e.g. Selection Sort, Insertion Sort)
+ * - NONE:  No sorted boundary (e.g. Linear Search, Binary Search)
+ */
+export const BOUNDARY_DIRECTIONS = {
+  RIGHT: 'right',
+  LEFT: 'left',
+  NONE: 'none'
+}
+

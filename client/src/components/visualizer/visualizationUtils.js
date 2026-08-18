@@ -24,6 +24,7 @@ export const createVisualizationStep = ({
   indices = [],
   sortedIndices = [],
   highlightedIndices = [],
+  selectedIndices = [],
   nodeIds = [],
   edgeIds = [],
   title = '',
@@ -37,6 +38,7 @@ export const createVisualizationStep = ({
     indices: Array.isArray(indices) ? [...indices] : [],
     sortedIndices: Array.isArray(sortedIndices) ? [...sortedIndices] : [],
     highlightedIndices: Array.isArray(highlightedIndices) ? [...highlightedIndices] : [],
+    selectedIndices: Array.isArray(selectedIndices) ? [...selectedIndices] : [],
     nodeIds: Array.isArray(nodeIds) ? [...nodeIds] : [],
     edgeIds: Array.isArray(edgeIds) ? [...edgeIds] : [],
     title: title || getStepDefaultTitle(type, indices),
@@ -58,6 +60,8 @@ const getStepDefaultTitle = (type, indices = []) => {
       return indices.length >= 2 ? `Swapping elements at [${indices.join(', ')}]` : 'Swapping elements'
     case STEP_TYPES.OVERWRITE:
       return indices.length > 0 ? `Overwriting element at index ${indices[0]}` : 'Updating element'
+    case STEP_TYPES.SELECT:
+      return indices.length > 0 ? `Selecting element at index ${indices[0]}` : 'Selecting candidate element'
     case STEP_TYPES.SORTED:
       return indices.length > 0 ? `Element at index ${indices[0]} sorted` : 'Element placed in sorted position'
     case STEP_TYPES.HIGHLIGHT:
@@ -80,6 +84,7 @@ const getStepDefaultTitle = (type, indices = []) => {
       return 'Algorithm Step'
   }
 }
+
 
 /**
  * Parses and validates user array input.
@@ -220,6 +225,14 @@ export const getStepTypeBadgeConfig = (type) => {
         textColor: 'text-violet-300',
         dotColor: 'bg-violet-400'
       }
+    case STEP_TYPES.SELECT:
+      return {
+        label: 'Selected',
+        bgColor: 'bg-cyan-500/15',
+        borderColor: 'border-cyan-400/40',
+        textColor: 'text-cyan-300',
+        dotColor: 'bg-cyan-400'
+      }
     case STEP_TYPES.VISIT:
     case STEP_TYPES.QUEUE:
     case STEP_TYPES.DEQUEUE:
@@ -232,6 +245,7 @@ export const getStepTypeBadgeConfig = (type) => {
         textColor: 'text-cyan-300',
         dotColor: 'bg-cyan-400'
       }
+
     case STEP_TYPES.NOT_FOUND:
       return {
         label: 'Not Found',

@@ -73,7 +73,7 @@ const LearningInsight = ({ step, isCompleted }) => {
         <span className="text-emerald-400 text-lg font-black">✦</span>
         <div className="text-center">
           <p className="text-sm font-black uppercase tracking-widest text-emerald-300">
-            Sorting Complete
+            {meta.completeTitle || 'Sorting Complete'}
           </p>
           {meta.totalComparisons !== undefined && (
             <p className="mt-0.5 text-xs text-slate-500">
@@ -86,9 +86,24 @@ const LearningInsight = ({ step, isCompleted }) => {
   }
 
   /* ── SWAP ── */
-  if (type === STEP_TYPES.SWAP) {
+  if (type === STEP_TYPES.SWAP || type === STEP_TYPES.OVERWRITE) {
     const mRight = meta.swapDetail?.movedRight ?? '?'
     const mLeft = meta.swapDetail?.movedLeft ?? '?'
+    const swapLabel = meta.swapLabel || 'Swapping'
+    const swapDescription = meta.movementText || (
+      meta.swapDetail?.movedRight !== undefined ? (
+        <>
+          <span className="font-semibold text-rose-300">{mRight}</span> moves right ·{' '}
+          <span className="font-semibold text-rose-300">{mLeft}</span> moves left
+        </>
+      ) : (
+        <>
+          <span className="font-semibold text-rose-300">{mRight}</span> ↔{' '}
+          <span className="font-semibold text-rose-300">{mLeft}</span>
+        </>
+      )
+    )
+
     return (
       <div className="flex h-full items-center justify-center gap-5 px-6">
         <div className="flex items-center gap-3">
@@ -101,10 +116,11 @@ const LearningInsight = ({ step, isCompleted }) => {
           </span>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-rose-400/80">Swapping</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-rose-400/80">
+            {swapLabel}
+          </p>
           <p className="text-xs text-slate-400">
-            <span className="font-semibold text-rose-300">{mRight}</span> moves right ·{' '}
-            <span className="font-semibold text-rose-300">{mLeft}</span> moves left
+            {swapDescription}
           </p>
         </div>
       </div>
@@ -114,17 +130,22 @@ const LearningInsight = ({ step, isCompleted }) => {
   /* ── SORTED: pass complete ── */
   if (type === STEP_TYPES.SORTED && meta.passComplete) {
     const nextPass = (meta.pass ?? 0) + 1
+    const passLabel = meta.passHeaderLabel || `Pass ${meta.pass} Complete`
+    const passDetail = meta.passDescription || (
+      meta.finalizedValue !== undefined
+        ? `${meta.finalizedValue} reached its final position`
+        : 'Element placed in final position'
+    )
+
     return (
       <div className="flex h-full items-center justify-center gap-4 px-6">
         <span className="text-sm font-black text-emerald-400">✓</span>
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-            Pass {meta.pass} Complete
+            {passLabel}
           </p>
           <p className="text-xs text-slate-400">
-            {meta.finalizedValue !== undefined
-              ? `${meta.finalizedValue} reached its final position`
-              : 'Element placed in final position'}
+            {passDetail}
             {nextPass <= (meta.totalPasses ?? 99) ? ` · Pass ${nextPass} next` : ''}
           </p>
         </div>
@@ -138,8 +159,12 @@ const LearningInsight = ({ step, isCompleted }) => {
       <div className="flex h-full items-center justify-center gap-4 px-6">
         <span className="text-sm font-black text-emerald-400">✓</span>
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">Early Exit</p>
-          <p className="text-xs text-slate-400">No swaps this pass — array is already sorted.</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+            {meta.earlyExitLabel || 'Early Exit'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {meta.earlyExitHeadline || 'No swaps this pass — array is already sorted.'}
+          </p>
         </div>
       </div>
     )
@@ -150,6 +175,19 @@ const LearningInsight = ({ step, isCompleted }) => {
     const isSwap = meta.willSwap === true
     const isEqual = meta.decision === 'equal'
     const operator = isSwap ? '>' : isEqual ? '=' : '<'
+
+    const decisionBadge = meta.decisionBadge || (
+      isSwap ? '⚠ Swap Required' : isEqual ? '✓ No Swap' : '✓ No Swap'
+    )
+
+    const decisionReason = meta.decisionReason || (
+      isSwap
+        ? `${meta.leftValue} is larger — must move right.`
+        : isEqual
+          ? 'Equal values — already in order.'
+          : `${meta.leftValue} is smaller — correct order.`
+    )
+
     return (
       <div className="flex h-full items-center justify-center gap-5 px-6">
         <div className="flex items-center gap-2">
@@ -185,14 +223,34 @@ const LearningInsight = ({ step, isCompleted }) => {
               isSwap ? 'text-rose-400' : 'text-slate-400'
             }`}
           >
-            {isSwap ? '⚠ Swap Required' : isEqual ? '✓ No Swap' : '✓ No Swap'}
+            {decisionBadge}
           </p>
           <p className="text-xs text-slate-500">
-            {isSwap
-              ? `${meta.leftValue} is larger — must move right.`
-              : isEqual
-                ? 'Equal values — already in order.'
-                : `${meta.leftValue} is smaller — correct order.`}
+            {decisionReason}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── SELECT / HIGHLIGHT / CHECK ── */
+  if (type === STEP_TYPES.SELECT || type === STEP_TYPES.HIGHLIGHT || type === STEP_TYPES.CHECK) {
+    const isSelect = type === STEP_TYPES.SELECT
+    return (
+      <div className="flex h-full items-center justify-center gap-4 px-6">
+        <span className={`text-sm font-black ${isSelect ? 'text-cyan-400' : 'text-violet-400'}`}>
+          ●
+        </span>
+        <div>
+          <p
+            className={`text-xs font-bold uppercase tracking-widest ${
+              isSelect ? 'text-cyan-400' : 'text-violet-400'
+            }`}
+          >
+            {meta.actionLabel || (isSelect ? 'Candidate Selected' : 'Inspecting')}
+          </p>
+          <p className="text-xs text-slate-300">
+            {step.title || 'Evaluating element'}
           </p>
         </div>
       </div>
@@ -210,6 +268,7 @@ const LearningInsight = ({ step, isCompleted }) => {
     </div>
   )
 }
+
 
 /* ─── MAIN COMPONENT ────────────────────────────────────────────────────── */
 const VisualizationLab = ({
