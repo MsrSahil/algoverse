@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { dashboardData } from '../../constants/dashboardData'
 import { progressService } from '../../services/progressService'
-import { buildDashboardProgressView } from '../../utils/dashboardProgress'
+import { favoriteService } from '../../services/favoriteService'
+import { buildDashboardProgressView, buildFavoriteAlgorithms } from '../../utils/dashboardProgress'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
 import LearningOverview from '../../components/dashboard/LearningOverview'
 import ProgressCard from '../../components/dashboard/ProgressCard'
@@ -19,6 +20,9 @@ const DashboardPage = () => {
   const [progress, setProgress] = useState([])
   const [progressLoading, setProgressLoading] = useState(false)
   const [progressError, setProgressError] = useState(false)
+  const [favoriteSlugs, setFavoriteSlugs] = useState([])
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [favoriteError, setFavoriteError] = useState(false)
 
   useEffect(() => {
     let isActive = true
@@ -55,10 +59,46 @@ const DashboardPage = () => {
     }
   }, [authLoading, isAuthenticated])
 
-  const progressView = buildDashboardProgressView(progress)
+  useEffect(() => {
+    let isActive = true
+
+    if (authLoading || !isAuthenticated) {
+      setFavoriteLoading(false)
+      return () => {
+        isActive = false
+      }
+    }
+
+    setFavoriteLoading(true)
+    setFavoriteError(false)
+    favoriteService
+      .getAll()
+      .then((response) => {
+        if (isActive) {
+          setFavoriteSlugs(response.data?.favorites || [])
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setFavoriteError(true)
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setFavoriteLoading(false)
+        }
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [authLoading, isAuthenticated])
+
+  const progressView = buildDashboardProgressView(progress, favoriteSlugs)
   progressView.progress.message = progressError
     ? 'Unable to load progress. Please try again.'
     : progressView.progress.message
+  const favoriteView = buildFavoriteAlgorithms(favoriteSlugs)
 
   if (authLoading) {
     return (
@@ -98,7 +138,11 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <RecentActivity activity={progressView.recentActivity} />
-          <FavoritesList favorites={dashboardData.favorites} />
+          <FavoritesList
+            favorites={favoriteView}
+            loading={favoriteLoading}
+            error={favoriteError}
+          />
         </div>
 
         <LearningJourney journey={dashboardData.learningJourney} />

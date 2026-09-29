@@ -1,7 +1,7 @@
 import { dashboardData } from '../constants/dashboardData'
 import { algorithms } from '../data/algorithms'
 
-export const buildDashboardProgressView = (progress = []) => {
+export const buildDashboardProgressView = (progress = [], favoriteSlugs = []) => {
   const progressBySlug = new Map(progress.map((item) => [item.algorithmSlug, item]))
   const completedAlgorithms = algorithms.filter((algorithm) => progressBySlug.get(algorithm.slug)?.completed)
   const inProgressAlgorithms = algorithms.filter((algorithm) => {
@@ -31,10 +31,19 @@ export const buildDashboardProgressView = (progress = []) => {
         return { ...item, value: `${completedCount} / ${totalAlgorithms}` }
       }
       if (item.id === 'inProgress') {
-        return { ...item, value: inProgressAlgorithms.length }
+        return {
+          ...item,
+          value: inProgressAlgorithms.length,
+          subtitle: inProgressAlgorithms.length === 0
+            ? 'No algorithms in progress'
+            : item.subtitle
+        }
       }
       if (item.id === 'overallProgress') {
         return { ...item, value: `${percentage}%` }
+      }
+      if (item.id === 'favorites') {
+        return { ...item, value: favoriteSlugs.length }
       }
       return item
     }),
@@ -54,4 +63,17 @@ export const buildDashboardProgressView = (progress = []) => {
       : null,
     recentActivity
   }
+}
+
+export const buildFavoriteAlgorithms = (favoriteSlugs = []) => {
+  return favoriteSlugs
+    .map((slug) => algorithms.find((algorithm) => algorithm.slug === slug))
+    .filter(Boolean)
+    .map((algorithm) => ({
+      id: algorithm.id,
+      title: algorithm.title,
+      slug: algorithm.slug,
+      category: algorithm.categoryLabel,
+      difficulty: algorithm.difficulty
+    }))
 }

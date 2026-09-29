@@ -11,6 +11,8 @@ describe('dashboard progress calculations', () => {
     expect(getOverviewValue(view, 'completed')).toBe(`0 / ${algorithms.length}`)
     expect(getOverviewValue(view, 'inProgress')).toBe(0)
     expect(getOverviewValue(view, 'overallProgress')).toBe('0%')
+    expect(getOverviewValue(view, 'favorites')).toBe(0)
+    expect(view.overview.find((item) => item.id === 'inProgress').subtitle).toBe('No algorithms in progress')
     expect(view.progress).toMatchObject({
       percentage: 0,
       completedAlgorithms: 0,
@@ -42,6 +44,7 @@ describe('dashboard progress calculations', () => {
     expect(getOverviewValue(view, 'completed')).toBe(`1 / ${algorithms.length}`)
     expect(getOverviewValue(view, 'inProgress')).toBe(1)
     expect(getOverviewValue(view, 'overallProgress')).toBe(`${expectedPercentage}%`)
+    expect(getOverviewValue(view, 'favorites')).toBe(0)
     expect(view.progress.completedAlgorithms).toBe(1)
     expect(view.progress.percentage).toBe(expectedPercentage)
     expect(view.continueLearning.progress).toBe(100)

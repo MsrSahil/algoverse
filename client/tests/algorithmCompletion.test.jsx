@@ -6,6 +6,7 @@ import { STEP_TYPES } from '../src/components/visualizer/visualizationTypes.js'
 import AlgorithmDetailsPage from '../src/pages/AlgorithmDetails/AlgorithmDetailsPage.jsx'
 import { useAuth } from '../src/context/AuthContext.jsx'
 import { progressService } from '../src/services/progressService.js'
+import { favoriteService } from '../src/services/favoriteService.js'
 
 const visualizationState = vi.hoisted(() => ({
   currentStep: 0,
@@ -32,6 +33,14 @@ vi.mock('../src/services/progressService.js', () => ({
   progressService: {
     getAll: vi.fn(),
     complete: vi.fn()
+  }
+}))
+
+vi.mock('../src/services/favoriteService.js', () => ({
+  favoriteService: {
+    getAll: vi.fn(),
+    add: vi.fn(),
+    remove: vi.fn()
   }
 }))
 
@@ -79,6 +88,9 @@ describe('algorithm completion flow', () => {
         }
       }
     })
+    favoriteService.getAll.mockResolvedValue({ data: { favorites: [] } })
+    favoriteService.add.mockResolvedValue({ data: { favorites: ['bubble-sort'] } })
+    favoriteService.remove.mockResolvedValue({ data: { favorites: [] } })
     setVisualizationState(false)
   })
 
@@ -144,5 +156,29 @@ describe('algorithm completion flow', () => {
     await user.click(await screen.findByRole('button', { name: 'Mark algorithm as complete' }))
 
     expect(progressService.complete).toHaveBeenCalledWith('selection-sort', expect.any(Number))
+  })
+
+  it('loads and toggles persisted Bubble Sort favorites', async () => {
+    const view = renderAlgorithm('bubble-sort')
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: 'Add to favorites' }))
+    expect(favoriteService.add).toHaveBeenCalledWith('bubble-sort')
+    expect(await screen.findByRole('button', { name: 'Remove from favorites' })).toHaveTextContent('Saved')
+
+    await user.click(screen.getByRole('button', { name: 'Remove from favorites' }))
+    expect(favoriteService.remove).toHaveBeenCalledWith('bubble-sort')
+    expect(await screen.findByRole('button', { name: 'Add to favorites' })).toHaveTextContent('Save')
+    view.unmount()
+  })
+
+  it('reflects an existing persisted favorite when opening an algorithm', async () => {
+    favoriteService.getAll.mockResolvedValue({ data: { favorites: ['selection-sort'] } })
+
+    renderAlgorithm('selection-sort')
+
+    const button = await screen.findByRole('button', { name: 'Remove from favorites' })
+    expect(button).toHaveTextContent('Saved')
+    expect(favoriteService.add).not.toHaveBeenCalled()
   })
 })

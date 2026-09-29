@@ -5,6 +5,9 @@ const actionButtonClassName =
 
 const LearningActions = ({
   isFavorite,
+  favoriteLoading = false,
+  favoriteInitialLoading = false,
+  favoriteError = null,
   isComplete,
   onToggleFavorite,
   onToggleComplete,
@@ -25,16 +28,23 @@ const LearningActions = ({
     ? 'border-cyan-400/50 bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 shadow-lg shadow-cyan-500/20 hover:border-cyan-300 hover:from-cyan-400 hover:to-emerald-400'
     : ''
 
+  const favoriteLabel = favoriteInitialLoading
+    ? 'Loading...'
+    : favoriteLoading
+    ? isFavorite ? 'Removing...' : 'Saving...'
+    : isFavorite ? 'Saved' : 'Save'
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={onToggleFavorite}
-        className={actionButtonClassName}
+        disabled={favoriteInitialLoading || favoriteLoading}
+        className={`${actionButtonClassName} disabled:cursor-not-allowed disabled:opacity-50`}
         aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       >
         <Bookmark className={`h-4 w-4 ${isFavorite ? 'fill-cyan-300 text-cyan-300' : 'text-slate-300'}`} />
-        {isFavorite ? 'Saved' : 'Save'}
+        {favoriteLabel}
       </button>
 
       <button
@@ -49,7 +59,7 @@ const LearningActions = ({
       </button>
 
       <span className="min-h-5 basis-full text-right text-xs text-slate-400" role="status" aria-live="polite">
-        {completionError || (!progressLoading && isComplete ? 'Completed ✓' : '')}
+        {completionError || favoriteError || (!progressLoading && isComplete ? 'Completed ✓' : '')}
       </span>
     </div>
   )

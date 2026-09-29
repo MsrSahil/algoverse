@@ -230,3 +230,59 @@ describe('authentication and progress API', () => {
     expect(fetched.body.data.progress[0].completed).toBe(true)
   })
 })
+
+describe('favorites API', () => {
+  beforeEach(() => {
+    resetUsers()
+  })
+
+  it('rejects unauthenticated favorite requests', async () => {
+    await request(app).get('/api/favorites').expect(401)
+    await request(app).post('/api/favorites/bubble-sort').expect(401)
+    await request(app).delete('/api/favorites/bubble-sort').expect(401)
+  })
+
+  it('adds a favorite, prevents duplicates, and returns persisted favorites', async () => {
+    const agent = request.agent(app)
+    await registerUser(agent).expect(201)
+
+    const first = await agent.post('/api/favorites/bubble-sort').expect(201)
+    expect(first.body.data).toMatchObject({
+      algorithmSlug: 'bubble-sort',
+      alreadyFavorited: false,
+      favorites: ['bubble-sort']
+    })
+
+    const duplicate = await agent.post('/api/favorites/bubble-sort').expect(200)
+    expect(duplicate.body.data.alreadyFavorited).toBe(true)
+    expect(duplicate.body.data.favorites).toEqual(['bubble-sort'])
+
+    const fetched = await agent.get('/api/favorites').expect(200)
+    expect(fetched.body.data.favorites).toEqual(['bubble-sort'])
+  })
+
+  it('removes a favorite safely and is idempotent when already removed', async () => {
+    const agent = request.agent(app)
+    await registerUser(agent).expect(201)
+    await agent.post('/api/favorites/selection-sort').expect(201)
+
+    const removed = await agent.delete('/api/favorites/selection-sort').expect(200)
+    expect(removed.body.data).toMatchObject({
+      algorithmSlug: 'selection-sort',
+      wasFavorited: true,
+      favorites: []
+    })
+
+    const repeated = await agent.delete('/api/favorites/selection-sort').expect(200)
+    expect(repeated.body.data.wasFavorited).toBe(false)
+    expect(repeated.body.data.favorites).toEqual([])
+  })
+
+  it('rejects malformed and unknown favorite slugs', async () => {
+    const agent = request.agent(app)
+    await registerUser(agent).expect(201)
+
+    await agent.post('/api/favorites/not_valid!').expect(400)
+    await agent.delete('/api/favorites/not-an-algorithm').expect(404)
+  })
+})

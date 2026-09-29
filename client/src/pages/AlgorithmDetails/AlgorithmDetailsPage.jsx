@@ -19,6 +19,7 @@ import { getAlgorithmGenerator } from '../../algorithms/registry'
 import { createVisualizationStep } from '../../components/visualizer/visualizationUtils'
 import { STEP_TYPES } from '../../components/visualizer/visualizationTypes'
 import { progressService } from '../../services/progressService'
+import { favoriteService } from '../../services/favoriteService'
 
 const DEFAULT_ARRAY = [50, 30, 80, 10, 60]
 
@@ -26,6 +27,9 @@ const AlgorithmDetailsPage = () => {
   const { slug } = useParams()
   const { isAuthenticated, authLoading } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [favoriteInitialLoading, setFavoriteInitialLoading] = useState(false)
+  const [favoriteError, setFavoriteError] = useState(null)
   const [isComplete, setIsComplete] = useState(false)
   const [progressLoading, setProgressLoading] = useState(false)
   const [completionLoading, setCompletionLoading] = useState(false)
@@ -83,6 +87,44 @@ const AlgorithmDetailsPage = () => {
       .finally(() => {
         if (isActive) {
           setProgressLoading(false)
+        }
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [authLoading, isAuthenticated, slug])
+
+  useEffect(() => {
+    let isActive = true
+
+    setIsFavorite(false)
+    setFavoriteError(null)
+
+    if (authLoading || !isAuthenticated) {
+      setFavoriteInitialLoading(false)
+      return () => {
+        isActive = false
+      }
+    }
+
+    setFavoriteInitialLoading(true)
+    favoriteService
+      .getAll()
+      .then((response) => {
+        if (!isActive) return
+
+        const favorites = response.data?.favorites || []
+        setIsFavorite(favorites.includes(slug))
+      })
+      .catch((error) => {
+        if (isActive) {
+          setFavoriteError(error.message || 'Unable to load favorites. Please try again.')
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setFavoriteInitialLoading(false)
         }
       })
 
@@ -203,6 +245,27 @@ const AlgorithmDetailsPage = () => {
     }
   }
 
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated || favoriteLoading || favoriteInitialLoading) return
+
+    setFavoriteLoading(true)
+    setFavoriteError(null)
+
+    try {
+      if (isFavorite) {
+        await favoriteService.remove(slug)
+        setIsFavorite(false)
+      } else {
+        await favoriteService.add(slug)
+        setIsFavorite(true)
+      }
+    } catch (error) {
+      setFavoriteError(error.message || 'Unable to update favorite. Please try again.')
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
+
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -211,8 +274,11 @@ const AlgorithmDetailsPage = () => {
         <AlgorithmHeader
           algorithm={algorithm}
           isFavorite={isFavorite}
+          favoriteLoading={favoriteLoading}
+          favoriteInitialLoading={favoriteInitialLoading}
+          favoriteError={favoriteError}
           isComplete={isComplete}
-          onToggleFavorite={() => setIsFavorite((s) => !s)}
+          onToggleFavorite={handleToggleFavorite}
           onToggleComplete={handleComplete}
           canComplete={isAuthenticated && (isVisualizationComplete || isComplete)}
           completionLoading={completionLoading}

@@ -2,16 +2,24 @@ import { ArrowRight, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getDifficultyStyles } from './difficultyStyles'
 
-const FavoritesList = ({ favorites = [] }) => {
+const FavoritesList = ({ favorites = [], loading = false, error = false }) => {
   return (
     <section aria-labelledby="favorites-title" className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 sm:p-8">
       <h2 id="favorites-title" className="text-xl font-bold text-white sm:text-2xl">
         Your Favorites
       </h2>
 
-      {favorites.length === 0 ? (
+      {loading ? (
+        <p className="mt-5 min-h-16 text-sm text-slate-300" role="status" aria-live="polite">
+          Loading favorites...
+        </p>
+      ) : error ? (
+        <p className="mt-5 min-h-16 text-sm text-rose-300" role="alert">
+          Unable to load favorites. Please try again.
+        </p>
+      ) : favorites.length === 0 ? (
         <div className="mt-5">
-          <p className="text-sm text-slate-300">You haven't saved any algorithms yet.</p>
+          <p className="text-sm text-slate-300">No favorites yet.</p>
           <Link
             to="/algorithms"
             className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:border-cyan-400/60 hover:bg-cyan-400/10"

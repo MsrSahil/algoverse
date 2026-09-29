@@ -32,44 +32,29 @@ export const dashboardData = {
     {
       id: 'completed',
       title: 'Algorithms Completed',
-      value: 12,
       subtitle: 'Concepts you have fully learned',
       icon: 'check'
     },
     {
       id: 'inProgress',
       title: 'In Progress',
-      value: 5,
       subtitle: 'Algorithms currently active',
       icon: 'progress'
     },
     {
       id: 'overallProgress',
       title: 'Learning Progress',
-      value: '24%',
       subtitle: 'Coverage across core roadmap',
       icon: 'chart'
     },
     {
       id: 'favorites',
       title: 'Favorites',
-      value: 8,
       subtitle: 'Saved topics to revisit later',
       icon: 'star'
     }
   ],
-  progress: {
-    percentage: 24,
-    completedAlgorithms: 12,
-    totalAlgorithms: 50,
-    message: "You're building momentum. Keep going!"
-  },
-  continueLearning: continueLearningAlgorithm
-    ? {
-        ...continueLearningAlgorithm,
-        progress: 60
-      }
-    : null,
+  continueLearning: continueLearningAlgorithm,
   categories: [
     {
       id: 'sorting',
@@ -143,49 +128,6 @@ export const dashboardData = {
     }
   ],
   recommendedAlgorithms,
-  recentActivity: [
-    {
-      id: 'activity-1',
-      periodLabel: 'Today',
-      action: 'Viewed Bubble Sort',
-      slug: 'bubble-sort'
-    },
-    {
-      id: 'activity-2',
-      periodLabel: 'Yesterday',
-      action: 'Completed Linear Search',
-      slug: 'linear-search'
-    },
-    {
-      id: 'activity-3',
-      periodLabel: '2 days ago',
-      action: 'Started Binary Search',
-      slug: 'binary-search'
-    }
-  ],
-  favorites: [
-    {
-      id: 'fav-1',
-      title: 'Binary Search',
-      slug: 'binary-search',
-      category: 'Searching',
-      difficulty: 'Easy'
-    },
-    {
-      id: 'fav-2',
-      title: 'Merge Sort',
-      slug: 'merge-sort',
-      category: 'Sorting',
-      difficulty: 'Medium'
-    },
-    {
-      id: 'fav-3',
-      title: 'Stack',
-      slug: 'stack',
-      category: 'Stack',
-      difficulty: 'Easy'
-    }
-  ],
   learningJourney: {
     currentTopic: 'Sorting',
     steps: ['Arrays', 'Searching', 'Sorting', 'Stack', 'Queue', 'Linked List', 'Trees', 'Graphs', 'Dynamic Programming']
@@ -194,6 +136,5 @@ export const dashboardData = {
 
 export const dashboardApiEndpoints = {
   progress: '/api/progress',
-  favorites: '/api/favorites',
-  activity: '/api/activity'
+  favorites: '/api/favorites'
 }

@@ -6,6 +6,9 @@ import LearningActions from './LearningActions'
 const AlgorithmHeader = ({
   algorithm,
   isFavorite,
+  favoriteLoading,
+  favoriteInitialLoading,
+  favoriteError,
   isComplete,
   onToggleFavorite,
   onToggleComplete,
@@ -58,6 +61,9 @@ const AlgorithmHeader = ({
 
         <LearningActions
           isFavorite={isFavorite}
+          favoriteLoading={favoriteLoading}
+          favoriteInitialLoading={favoriteInitialLoading}
+          favoriteError={favoriteError}
           isComplete={isComplete}
           onToggleFavorite={onToggleFavorite}
           onToggleComplete={onToggleComplete}
