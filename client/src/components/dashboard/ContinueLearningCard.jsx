@@ -42,7 +42,9 @@ const ContinueLearningCard = ({ current }) => {
               </span>
             </div>
           </div>
-          <p className="text-sm font-semibold text-cyan-300">Progress: {current.progress}%</p>
+          <p className="text-sm font-semibold text-cyan-300">
+            {current.progress >= 100 ? '✓ Completed' : `Progress: ${current.progress}%`}
+          </p>
         </div>
 
         <div className="mt-4 h-2.5 rounded-full bg-white/10" role="progressbar" aria-valuenow={current.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${current.title} progress`}>
@@ -53,7 +55,7 @@ const ContinueLearningCard = ({ current }) => {
           to={`/algorithm/${current.slug}`}
           className="mt-5 inline-flex items-center gap-2 rounded-full bg-linear-to-r from-cyan-400 to-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition duration-200 hover:shadow-lg hover:shadow-cyan-400/30"
         >
-          Continue Learning
+          {current.progress >= 100 ? 'Review Algorithm' : 'Continue Learning'}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </article>

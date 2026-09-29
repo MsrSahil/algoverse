@@ -171,6 +171,9 @@ const AlgorithmDetailsPage = () => {
   }
 
   const isComingSoon = algorithm.status === 'coming-soon'
+  const isVisualizationComplete = Boolean(
+    isCompleted && currentStepData?.type === STEP_TYPES.COMPLETE
+  )
 
   const handleApplyArray = (newArray) => {
     setCustomArray(newArray)
@@ -181,7 +184,7 @@ const AlgorithmDetailsPage = () => {
   }
 
   const handleComplete = async () => {
-    if (!isAuthenticated || isComplete || !isCompleted || completionLoading) return
+    if (!isAuthenticated || isComplete || !isVisualizationComplete || completionLoading) return
 
     setCompletionLoading(true)
     setCompletionError(null)
@@ -211,7 +214,7 @@ const AlgorithmDetailsPage = () => {
           isComplete={isComplete}
           onToggleFavorite={() => setIsFavorite((s) => !s)}
           onToggleComplete={handleComplete}
-          canComplete={isAuthenticated && (isCompleted || isComplete)}
+          canComplete={isAuthenticated && (isVisualizationComplete || isComplete)}
           completionLoading={completionLoading}
           progressLoading={progressLoading}
           completionError={completionError}
