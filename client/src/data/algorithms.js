@@ -402,7 +402,7 @@ export const algorithms = [
     categoryGroup: 'sorting',
     difficulty: ALGORITHM_DIFFICULTY.EASY,
     description:
-      'Builds the final sorted array one element at a time by inserting elements into their correct position.',
+      'Builds the sorted array one element at a time by picking unsorted keys, shifting larger sorted elements right, and inserting the key into the created gap.',
     timeComplexity: {
       best: 'O(n)',
       average: 'O(n^2)',
@@ -411,8 +411,161 @@ export const algorithms = [
     spaceComplexity: 'O(1)',
     estimatedTime: '12 min',
     estimatedMinutes: 12,
-    status: ALGORITHM_STATUS.COMING_SOON,
-    tags: ['sorting', 'incremental', 'beginner']
+    status: ALGORITHM_STATUS.AVAILABLE,
+    tags: ['sorting', 'incremental', 'in-place', 'stable', 'beginner'],
+    keyIdea:
+      'Take unsorted elements one by one, shift larger elements in the sorted region right to create a gap, and insert the key into its correct position.',
+    overview: {
+      whatIsIt:
+        'Insertion Sort is an intuitive, card-sorting style algorithm. It divides the array into a sorted prefix and unsorted suffix, picking keys one by one and inserting each into its proper sorted location by shifting larger elements right.',
+      whenToUse:
+        'Use it for small arrays, nearly-sorted datasets (runs in O(n) linear time), online streams where new items arrive continuously, and as the base-case sorter in hybrid algorithms like Timsort.',
+      keyIdea:
+        'Pick up a key, shift all larger sorted elements to the right to open a gap, and drop the key into that gap.'
+    },
+    explanation: {
+      howItWorks: [
+        'Consider the first element (index 0) as an initial sorted region of length 1.',
+        'Pick the next unsorted element as the key.',
+        'Compare the key with elements in the sorted region from right to left.',
+        'Shift each element that is greater than the key one position to the right.',
+        'Insert the key into the resulting gap and expand the sorted boundary.'
+      ],
+      stepByStep: [
+        'Start at index 1 with the first unsorted key.',
+        'Compare the key with the element to its left.',
+        'If the sorted element is larger, shift it one position right.',
+        'Repeat shifting until a smaller/equal element is found or index 0 is passed.',
+        'Insert the key into the open gap.',
+        'Repeat for all remaining keys until the array is fully sorted.'
+      ],
+      whenToUse: [
+        'When dealing with nearly sorted or small datasets (n < 50).',
+        'When a stable, in-place sorting algorithm with minimal overhead is needed.',
+        'When data is arriving online in a continuous stream.'
+      ],
+      advantages: [
+        'Very fast for small or nearly sorted arrays (O(n) best-case).',
+        'Stable sorting: preserves original relative order of equal elements.',
+        'In-place: requires only O(1) auxiliary memory.',
+        'Adaptive: efficiency increases the more pre-sorted the data is.'
+      ],
+      disadvantages: [
+        'Quadratic time complexity O(n^2) for average and worst cases.',
+        'Inefficient for large arrays compared to O(n log n) divide-and-conquer algorithms.'
+      ]
+    },
+    codeImplementations: {
+      javascript: `function insertionSort(arr) {
+  const result = [...arr];
+  const n = result.length;
+
+  for (let i = 1; i < n; i += 1) {
+    const key = result[i];
+    let j = i - 1;
+
+    while (j >= 0 && result[j] > key) {
+      result[j + 1] = result[j];
+      j -= 1;
+    }
+
+    result[j + 1] = key;
+  }
+
+  return result;
+}`,
+      python: `def insertion_sort(arr):
+    result = arr[:]
+    n = len(result)
+
+    for i in range(1, n):
+        key = result[i]
+        j = i - 1
+
+        while j >= 0 and result[j] > key:
+            result[j + 1] = result[j]
+            j -= 1
+
+        result[j + 1] = key
+
+    return result`,
+      java: `public static int[] insertionSort(int[] arr) {
+    int[] result = arr.clone();
+    int n = result.length;
+
+    for (int i = 1; i < n; i++) {
+      int key = result[i];
+      int j = i - 1;
+
+      while (j >= 0 && result[j] > key) {
+        result[j + 1] = result[j];
+        j--;
+      }
+
+      result[j + 1] = key;
+    }
+
+    return result;
+}`,
+      cpp: `void insertionSort(std::vector<int>& arr) {
+  int n = static_cast<int>(arr.size());
+
+  for (int i = 1; i < n; ++i) {
+    int key = arr[i];
+    int j = i - 1;
+
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j -= 1;
+    }
+
+    arr[j + 1] = key;
+  }
+}`
+    },
+    dryRun: [
+      {
+        step: 'Step 0',
+        title: 'Initial array',
+        detail: '[10, 30, 50, 20, 40] — [10] is sorted prefix.'
+      },
+      {
+        step: 'Pass 1',
+        title: 'Key = 30',
+        detail: '30 >= 10, no shift needed. Insert 30 at index 1 ➔ [10, 30 | 50, 20, 40].'
+      },
+      {
+        step: 'Pass 2',
+        title: 'Key = 50',
+        detail: '50 >= 30, no shift needed. Insert 50 at index 2 ➔ [10, 30, 50 | 20, 40].'
+      },
+      {
+        step: 'Pass 3',
+        title: 'Key = 20',
+        detail: '50 > 20 (shift 50), 30 > 20 (shift 30), 10 < 20 (gap at 1). Insert 20 ➔ [10, 20, 30, 50 | 40].'
+      },
+      {
+        step: 'Pass 4',
+        title: 'Key = 40',
+        detail: '50 > 40 (shift 50), 30 < 40 (gap at 3). Insert 40 ➔ [10, 20, 30, 40, 50].'
+      }
+    ],
+    practiceProblems: [
+      {
+        title: 'Insertion Sort List',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Sort a linked list using insertion sort.'
+      },
+      {
+        title: 'Sort an Array',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Implement sorting algorithms for array datasets.'
+      }
+    ],
+    relatedAlgorithms: ['bubble-sort', 'selection-sort', 'merge-sort', 'quick-sort'],
+    visualizationPreview: [10, 30, 50, 20, 40]
   },
   {
     id: 'merge-sort',
@@ -423,7 +576,7 @@ export const algorithms = [
     categoryGroup: 'sorting',
     difficulty: ALGORITHM_DIFFICULTY.MEDIUM,
     description:
-      'A divide-and-conquer algorithm that splits arrays into halves, sorts them, and merges them efficiently.',
+      'A classic divide-and-conquer algorithm that recursively splits arrays into halves down to single elements, then merges sorted pairs back together.',
     timeComplexity: {
       best: 'O(n log n)',
       average: 'O(n log n)',
@@ -432,8 +585,206 @@ export const algorithms = [
     spaceComplexity: 'O(n)',
     estimatedTime: '15 min',
     estimatedMinutes: 15,
-    status: ALGORITHM_STATUS.COMING_SOON,
-    tags: ['sorting', 'divide-and-conquer', 'stable']
+    status: ALGORITHM_STATUS.AVAILABLE,
+    tags: ['sorting', 'divide-and-conquer', 'stable', 'recursive'],
+    keyIdea:
+      'Divide the unsorted array into n single-element sub-arrays, then repeatedly merge sub-arrays to produce new sorted sub-arrays until only one remains.',
+    overview: {
+      whatIsIt:
+        'Merge Sort is an optimal comparison-based sorting algorithm built on the divide-and-conquer paradigm. It breaks problems down into smaller sub-problems of the same type, solves them independently, and combines their solutions.',
+      whenToUse:
+        'Use when guaranteed O(n log n) worst-case time complexity is required, when sorting linked lists, or when stable sorting of complex objects is required.',
+      keyIdea:
+        'Split array recursively until base cases (single elements) are reached, then merge adjacent sorted groups by repeatedly taking the smaller front element into an output array.'
+    },
+    explanation: {
+      howItWorks: [
+        'Divide the unsorted array into two halves at the midpoint.',
+        'Recursively sort the left half.',
+        'Recursively sort the right half.',
+        'Merge the two sorted halves by comparing front elements and placing the smaller one into the output.',
+        'Continue until all sub-arrays are merged back into a single sorted array.'
+      ],
+      stepByStep: [
+        'Calculate midpoint: mid = floor((start + end) / 2).',
+        'Divide array into left [start...mid] and right [mid+1...end] subarrays.',
+        'Base case: if subarray has 1 element, it is already sorted.',
+        'Merge: maintain pointers at the start of both sorted subarrays.',
+        'Compare front elements: take the smaller element and append to merged output.',
+        'Copy any remaining elements when one subarray is exhausted.',
+        'Write merged result back into the target array range.'
+      ],
+      whenToUse: [
+        'When guaranteed O(n log n) runtime is mandatory regardless of input distribution.',
+        'When sorting linked lists (Merge Sort requires O(1) extra space for linked lists).',
+        'When stability is required (equal elements preserve original order).'
+      ],
+      advantages: [
+        'Guaranteed O(n log n) time complexity across all cases (best, average, worst).',
+        'Stable sorting: preserves original relative order of duplicate values.',
+        'Predictable, deterministic performance unaffected by adversarial inputs.',
+        'Well-suited for external sorting of large datasets that exceed RAM.'
+      ],
+      disadvantages: [
+        'Requires O(n) auxiliary memory space for temporary merge buffers.',
+        'Slower than Quick Sort or Insertion Sort on small datasets due to recursive overhead.'
+      ]
+    },
+    codeImplementations: {
+      javascript: `function mergeSort(arr) {
+  if (arr.length <= 1) return arr;
+
+  const mid = Math.floor(arr.length / 2);
+  const left = mergeSort(arr.slice(0, mid));
+  const right = mergeSort(arr.slice(mid));
+
+  return merge(left, right);
+}
+
+function merge(left, right) {
+  const result = [];
+  let i = 0, j = 0;
+
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) {
+      result.push(left[i]);
+      i += 1;
+    } else {
+      result.push(right[j]);
+      j += 1;
+    }
+  }
+
+  return result.concat(left.slice(i)).concat(right.slice(j));
+}`,
+      python: `def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result`,
+      java: `public static void mergeSort(int[] arr, int left, int right) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+    mergeSort(arr, left, mid);
+    mergeSort(arr, mid + 1, right);
+    merge(arr, left, mid, right);
+}
+
+private static void merge(int[] arr, int left, int mid, int right) {
+    int[] temp = new int[right - left + 1];
+    int i = left, j = mid + 1, k = 0;
+
+    while (i <= mid && j <= right) {
+      if (arr[i] <= arr[j]) {
+        temp[k++] = arr[i++];
+      } else {
+        temp[k++] = arr[j++];
+      }
+    }
+
+    while (i <= mid) temp[k++] = arr[i++];
+    while (j <= right) temp[k++] = arr[j++];
+
+    System.arraycopy(temp, 0, arr, left, temp.length);
+}`,
+      cpp: `void merge(std::vector<int>& arr, int left, int mid, int right) {
+    std::vector<int> temp;
+    int i = left, j = mid + 1;
+
+    while (i <= mid && j <= right) {
+        if (arr[i] <= arr[j]) {
+            temp.push_back(arr[i++]);
+        } else {
+            temp.push_back(arr[j++]);
+        }
+    }
+
+    while (i <= mid) temp.push_back(arr[i++]);
+    while (j <= right) temp.push_back(arr[j++]);
+
+    for (int k = 0; k < temp.size(); ++k) {
+        arr[left + k] = temp[k];
+    }
+}
+
+void mergeSort(std::vector<int>& arr, int left, int right) {
+    if (left >= right) return;
+    int mid = left + (right - left) / 2;
+    mergeSort(arr, left, mid);
+    mergeSort(arr, mid + 1, right);
+    merge(arr, left, mid, right);
+}`
+    },
+    dryRun: [
+      {
+        step: 'Step 1: Divide',
+        title: 'Recursive Split',
+        detail: '[38, 27, 43, 10, 55, 19, 6, 82] ➔ [38, 27, 43, 10] & [55, 19, 6, 82]'
+      },
+      {
+        step: 'Step 2: Base Cases',
+        title: 'Single Elements',
+        detail: 'Divided down to [38], [27], [43], [10], [55], [19], [6], [82]'
+      },
+      {
+        step: 'Step 3: Merge Pairs',
+        title: 'Bottom-up Merge',
+        detail: '[38]+[27] ➔ [27, 38], [43]+[10] ➔ [10, 43], [55]+[19] ➔ [19, 55], [6]+[82] ➔ [6, 82]'
+      },
+      {
+        step: 'Step 4: Merge 4s',
+        title: 'Combine Subarrays',
+        detail: '[27, 38]+[10, 43] ➔ [10, 27, 38, 43] and [19, 55]+[6, 82] ➔ [6, 19, 55, 82]'
+      },
+      {
+        step: 'Step 5: Final Merge',
+        title: 'Reconstruct Array',
+        detail: '[10, 27, 38, 43] + [6, 19, 55, 82] ➔ [6, 10, 19, 27, 38, 43, 55, 82]'
+      }
+    ],
+    practiceProblems: [
+      {
+        title: 'Sort an Array',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Sort an array of integers in O(n log n) time complexity.'
+      },
+      {
+        title: 'Merge Sorted Array',
+        difficulty: 'Easy',
+        platform: 'LeetCode',
+        description: 'Merge two sorted integer arrays into one sorted array.'
+      },
+      {
+        title: 'Sort List',
+        difficulty: 'Medium',
+        platform: 'LeetCode',
+        description: 'Sort a linked list in O(n log n) time using constant space complexity.'
+      }
+    ],
+    relatedAlgorithms: ['bubble-sort', 'selection-sort', 'insertion-sort', 'quick-sort'],
+    visualizationPreview: [38, 27, 43, 10, 55, 19, 6, 82]
   },
   {
     id: 'quick-sort',

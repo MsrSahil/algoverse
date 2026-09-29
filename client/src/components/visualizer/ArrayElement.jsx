@@ -41,8 +41,9 @@ const ArrayElement = ({
   size = 'md',
   customBadge = null
 }) => {
+  const isGap = value === null || value === undefined
   const cfg = getElementStyleConfig(state)
-  const activeBadge = customBadge || cfg.badge
+  const activeBadge = customBadge || (isGap ? { text: 'GAP', cls: 'bg-violet-950/80 text-violet-300 border border-violet-400/40 font-bold' } : cfg.badge)
 
   // ── Value font size ───────────────────────────────────────────────────
   // Two axes: bubble diameter AND string length (e.g. "-999" is 4 chars).
@@ -53,7 +54,7 @@ const ArrayElement = ({
       return size === 'sm' ? 'text-sm sm:text-base' : 'text-base sm:text-lg lg:text-xl'
     }
 
-    const charLen = String(value).length
+    const charLen = isGap ? 3 : String(value).length
 
     // 4+ chars: e.g. "-999", "1000", "-100"
     if (charLen >= 4) {
@@ -90,10 +91,6 @@ const ArrayElement = ({
     : ''
 
   // Smooth width/height transition for input-array changes only.
-  // During a bubble sort run, min/max never changes (only positions swap),
-  // so these will be stable — the transition is just insurance for the
-  // "Apply Input" action. Explicit transition-property avoids triggering
-  // gradient/shadow transitions unintentionally.
   const bubbleSizeStyle = bubblePx !== null
     ? {
         width: bubblePx,
@@ -107,7 +104,7 @@ const ArrayElement = ({
     <div
       className="flex flex-col items-center gap-2"
       role="listitem"
-      aria-label={`Value ${value} at index ${index}, state ${state}`}
+      aria-label={isGap ? `Gap at index ${index}` : `Value ${value} at index ${index}, state ${state}`}
       data-stable-id={stableId}
     >
       {/* Badge row — fixed height prevents layout jump on badge appear/disappear */}
@@ -128,58 +125,65 @@ const ArrayElement = ({
         )}
       </div>
 
-
-      {/*
-        Bubble wrapper — owns ACTIVE STATE SCALE (5%) + lift transforms.
-        Transition here animates the scale/translate smoothly.
-
-        Layer order (outermost → innermost):
-          slot div          →  FLIP translateX  (position animation)
-          this wrapper div  →  scale-[1.05]     (active-state emphasis)
-          bubble div        →  width/height px   (value magnitude)
-
-        All three layers are orthogonal; none interferes with the others.
-      */}
-      <div className={`transition-transform duration-300 ease-out ${cfg.wrapper}`}>
-
-        {/* ── Circular bubble body ── VALUE SIZE via inline style ── */}
-        <div
-          className={`
-            relative flex items-center justify-center
-            rounded-full select-none overflow-hidden
-            transition-[box-shadow,border-color,background] duration-300 ease-out
-            ${bubbleSizeCls}
-            ${cfg.bubble}
-          `}
-          style={bubbleSizeStyle}
-        >
-          {/* Specular highlight — top-left inner shine for depth */}
-          <span
-            className="pointer-events-none absolute left-[18%] top-[14%] h-[28%] w-[28%] rounded-full bg-white/20 blur-[2px]"
-            aria-hidden="true"
-          />
-
-          {/* Value label — primary visual element */}
-          <span
+      {/* Bubble wrapper — owns ACTIVE STATE SCALE (5%) + lift transforms */}
+      <div className={`transition-transform duration-300 ease-out ${isGap ? '' : cfg.wrapper}`}>
+        {isGap ? (
+          /* ── Dashed GAP slot ── */
+          <div
             className={`
-              relative z-10 leading-none tabular-nums font-bold
-              max-w-full px-[6%] text-center truncate
-              ${valueFontCls}
-              ${cfg.valueCls}
+              relative flex items-center justify-center
+              rounded-full select-none overflow-hidden
+              border-2 border-dashed border-violet-400/50 bg-violet-950/20
+              shadow-[inset_0_0_16px_rgba(139,92,246,0.25)]
+              transition-[box-shadow,border-color,background] duration-300 ease-out
+              ${bubbleSizeCls}
             `}
+            style={bubbleSizeStyle}
           >
-            {value}
-          </span>
-        </div>
+            <span className="text-[10px] font-mono font-bold tracking-wider text-violet-400/70 select-none">
+              GAP
+            </span>
+          </div>
+        ) : (
+          /* ── Circular bubble body ── VALUE SIZE via inline style ── */
+          <div
+            className={`
+              relative flex items-center justify-center
+              rounded-full select-none overflow-hidden
+              transition-[box-shadow,border-color,background] duration-300 ease-out
+              ${bubbleSizeCls}
+              ${cfg.bubble}
+            `}
+            style={bubbleSizeStyle}
+          >
+            {/* Specular highlight — top-left inner shine for depth */}
+            <span
+              className="pointer-events-none absolute left-[18%] top-[14%] h-[28%] w-[28%] rounded-full bg-white/20 blur-[2px]"
+              aria-hidden="true"
+            />
+
+            {/* Value label — primary visual element */}
+            <span
+              className={`
+                relative z-10 leading-none tabular-nums font-bold
+                max-w-full px-[6%] text-center truncate
+                ${valueFontCls}
+                ${cfg.valueCls}
+              `}
+            >
+              {value}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Index label — visually secondary */}
-      <span className={`text-[10px] leading-none font-mono transition-colors duration-200 ${cfg.indexCls}`}>
+      <span className={`text-[10px] leading-none font-mono transition-colors duration-200 ${isGap ? 'text-violet-400/60' : cfg.indexCls}`}>
         [{index}]
       </span>
     </div>
   )
 }
 
-
 export default ArrayElement
+

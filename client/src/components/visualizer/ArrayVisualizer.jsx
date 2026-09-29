@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect, useMemo } from 'react'
 import { STEP_TYPES, BOUNDARY_DIRECTIONS } from './visualizationTypes.js'
 import { getElementState } from './elementStates.js'
 import ArrayElement from './ArrayElement.jsx'
+import MergeVisualizer from './MergeVisualizer.jsx'
 
 /* ─────────────────────────────────────────────────────────────────────────
    FLIP SWAP ANIMATION
@@ -189,8 +190,48 @@ const DecisionPanel = ({ step, arrayData }) => {
     )
   }
 
-  // ── SWAP / MOVE ──
+  // ── SWAP / MOVE / SHIFT / INSERT ──
   if (type === STEP_TYPES.SWAP || type === STEP_TYPES.OVERWRITE) {
+    if (metadata.isShift) {
+      return (
+        <div
+          className="flex flex-col items-center gap-2 rounded-2xl border border-violet-400/30 bg-violet-950/20 px-6 py-4 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-violet-400/80">
+            {metadata.swapLabel || 'Shifting Element'}
+          </p>
+          <p className="text-base font-bold text-white">
+            {step.title || 'Shifting element right'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {step.explanation || metadata.swapExplanation}
+          </p>
+        </div>
+      )
+    }
+
+    if (metadata.isInsert) {
+      return (
+        <div
+          className="flex flex-col items-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-950/20 px-6 py-4 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-emerald-400/80">
+            {metadata.swapLabel || 'Inserting Key'}
+          </p>
+          <p className="text-base font-bold text-white">
+            {step.title || 'Key inserted into gap'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {step.explanation || metadata.swapExplanation}
+          </p>
+        </div>
+      )
+    }
+
     const mRight = swapDetail?.movedRight ?? (indices.length === 2 ? arrayData[indices[1]] : '?')
     const mLeft = swapDetail?.movedLeft ?? (indices.length === 2 ? arrayData[indices[0]] : '?')
     const swapLabel = metadata.swapLabel || 'Swapping'
@@ -234,6 +275,7 @@ const DecisionPanel = ({ step, arrayData }) => {
       </div>
     )
   }
+
 
   // ── COMPARE ──
   if (type === STEP_TYPES.COMPARE && leftValue !== undefined && rightValue !== undefined) {
@@ -448,6 +490,8 @@ const ArrayVisualizer = ({
   isComingSoon = false
 }) => {
   // ── 1. Active array snapshot ──────────────────────────────────────────
+
+
   const arrayData = useMemo(() => {
     if (step && Array.isArray(step.arrayState) && step.arrayState.length > 0) {
       return step.arrayState
@@ -466,16 +510,18 @@ const ArrayVisualizer = ({
   // Size travels with the VALUE — when a swap moves value 50 to index 1,
   // arrayData[1] is now 50, so that slot gets the large diameter. ✓
   const { minVal, maxVal } = useMemo(() => {
-    if (n === 0) return { minVal: 0, maxVal: 0 }
+    const validNumbers = arrayData.filter((v) => typeof v === 'number' && !isNaN(v))
+    if (validNumbers.length === 0) return { minVal: 0, maxVal: 0 }
     return {
-      minVal: Math.min(...arrayData),
-      maxVal: Math.max(...arrayData)
+      minVal: Math.min(...validNumbers),
+      maxVal: Math.max(...validNumbers)
     }
-  }, [arrayData, n])
+  }, [arrayData])
 
   // ── 3. Slot refs for FLIP animation ───────────────────────────────────
   const slotRefs = useRef([])
   const prevStepRef = useRef(null)
+
 
   // ── 4. FLIP layout effect ─────────────────────────────────────────────
   useLayoutEffect(() => {
@@ -650,8 +696,14 @@ const ArrayVisualizer = ({
     }
   }, [step, arrayData])
 
+  // Delegate to specialized MergeVisualizer for Merge Sort's group-based view
+  if (step?.metadata?.isMergeSort) {
+    return <MergeVisualizer step={step} fallbackArray={fallbackArray} isComingSoon={isComingSoon} />
+  }
+
   // ── Empty / coming-soon states ─────────────────────────────────────────
   if (isComingSoon && n === 0) {
+
     return (
       <div className="flex min-h-52 flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-slate-950/40 p-6 text-center">
         <span className="text-3xl" aria-hidden="true">🔧</span>
@@ -788,7 +840,7 @@ const ArrayVisualizer = ({
                     index={slotIndex}
                     state={state}
                     stableId={`slot-${slotIndex}`}
-                    bubblePx={computeBubblePx(value, minVal, maxVal)}
+                    bubblePx={computeBubblePx(typeof value === 'number' ? value : (metadata.keyValue ?? minVal), minVal, maxVal)}
                     customBadge={metadata.elementBadges?.[slotIndex]}
                   />
                 </div>

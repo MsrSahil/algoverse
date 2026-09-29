@@ -85,8 +85,40 @@ const LearningInsight = ({ step, isCompleted }) => {
     )
   }
 
-  /* ── SWAP ── */
+  /* ── SWAP / SHIFT / INSERT ── */
   if (type === STEP_TYPES.SWAP || type === STEP_TYPES.OVERWRITE) {
+    if (meta.isShift) {
+      return (
+        <div className="flex h-full items-center justify-center gap-4 px-6">
+          <span className="text-sm font-black text-violet-400">➔</span>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-violet-400">
+              {meta.swapLabel || 'Shifting'}
+            </p>
+            <p className="text-xs text-slate-300">
+              {meta.movementText || step?.title || 'Element shifted right'}
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    if (meta.isInsert) {
+      return (
+        <div className="flex h-full items-center justify-center gap-4 px-6">
+          <span className="text-sm font-black text-emerald-400">✓</span>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+              {meta.swapLabel || 'Inserting'}
+            </p>
+            <p className="text-xs text-slate-300">
+              {meta.movementText || step?.title || 'Key inserted into gap'}
+            </p>
+          </div>
+        </div>
+      )
+    }
+
     const mRight = meta.swapDetail?.movedRight ?? '?'
     const mLeft = meta.swapDetail?.movedLeft ?? '?'
     const swapLabel = meta.swapLabel || 'Swapping'
@@ -127,11 +159,46 @@ const LearningInsight = ({ step, isCompleted }) => {
     )
   }
 
+
+  /* ── PARTITION / SPLIT ── */
+  if (type === STEP_TYPES.PARTITION) {
+    return (
+      <div className="flex h-full items-center justify-center gap-4 px-6">
+        <span className="text-sm font-black text-cyan-400">✂</span>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-cyan-400">
+            {meta.actionLabel || 'Divide & Split'}
+          </p>
+          <p className="text-xs text-slate-300">
+            {step?.title || 'Dividing array into smaller subarrays'}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── MERGE START ── */
+  if (type === STEP_TYPES.MERGE) {
+    return (
+      <div className="flex h-full items-center justify-center gap-4 px-6">
+        <span className="text-sm font-black text-emerald-400">⮀</span>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+            {meta.actionLabel || 'Merge Subarrays'}
+          </p>
+          <p className="text-xs text-slate-300">
+            {step?.title || 'Merging sorted subarrays'}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   /* ── SORTED: pass complete ── */
-  if (type === STEP_TYPES.SORTED && meta.passComplete) {
+  if (type === STEP_TYPES.SORTED && (meta.passComplete || meta.isMergeSort)) {
     const nextPass = (meta.pass ?? 0) + 1
-    const passLabel = meta.passHeaderLabel || `Pass ${meta.pass} Complete`
-    const passDetail = meta.passDescription || (
+    const passLabel = meta.passHeaderLabel || (meta.isMergeSort ? '✓ Merge Complete' : `Pass ${meta.pass} Complete`)
+    const passDetail = meta.passDescription || step?.title || (
       meta.finalizedValue !== undefined
         ? `${meta.finalizedValue} reached its final position`
         : 'Element placed in final position'
@@ -146,7 +213,7 @@ const LearningInsight = ({ step, isCompleted }) => {
           </p>
           <p className="text-xs text-slate-400">
             {passDetail}
-            {nextPass <= (meta.totalPasses ?? 99) ? ` · Pass ${nextPass} next` : ''}
+            {!meta.isMergeSort && nextPass <= (meta.totalPasses ?? 99) ? ` · Pass ${nextPass} next` : ''}
           </p>
         </div>
       </div>
@@ -174,7 +241,7 @@ const LearningInsight = ({ step, isCompleted }) => {
   if (type === STEP_TYPES.COMPARE && meta.leftValue !== undefined) {
     const isSwap = meta.willSwap === true
     const isEqual = meta.decision === 'equal'
-    const operator = isSwap ? '>' : isEqual ? '=' : '<'
+    const operator = meta.operator || (isSwap ? '>' : isEqual ? '=' : '<')
 
     const decisionBadge = meta.decisionBadge || (
       isSwap ? '⚠ Swap Required' : isEqual ? '✓ No Swap' : '✓ No Swap'
@@ -187,6 +254,7 @@ const LearningInsight = ({ step, isCompleted }) => {
           ? 'Equal values — already in order.'
           : `${meta.leftValue} is smaller — correct order.`
     )
+
 
     return (
       <div className="flex h-full items-center justify-center gap-5 px-6">
