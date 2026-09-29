@@ -3,6 +3,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import authRoutes from './routes/authRoutes.js'
+import progressRoutes from './routes/progressRoutes.js'
 import { errorHandler } from './middleware/errorMiddleware.js'
 
 const app = express()
@@ -33,6 +34,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/progress', progressRoutes)
 
 // 404 handler
 app.use((req, res) => {

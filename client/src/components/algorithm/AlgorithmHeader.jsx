@@ -8,7 +8,11 @@ const AlgorithmHeader = ({
   isFavorite,
   isComplete,
   onToggleFavorite,
-  onToggleComplete
+  onToggleComplete,
+  canComplete,
+  completionLoading,
+  progressLoading,
+  completionError
 }) => {
   return (
     <header className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 sm:p-8">
@@ -57,6 +61,10 @@ const AlgorithmHeader = ({
           isComplete={isComplete}
           onToggleFavorite={onToggleFavorite}
           onToggleComplete={onToggleComplete}
+          canComplete={canComplete}
+          completionLoading={completionLoading}
+          progressLoading={progressLoading}
+          completionError={completionError}
         />
       </div>
     </header>

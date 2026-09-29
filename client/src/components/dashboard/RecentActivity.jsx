@@ -10,7 +10,7 @@ const RecentActivity = ({ activity = [] }) => {
 
       {activity.length === 0 ? (
         <div className="mt-5">
-          <p className="text-sm text-slate-300">Your learning activity will appear here.</p>
+          <p className="text-sm text-slate-300">No algorithms completed yet.</p>
           <Link
             to="/algorithms"
             className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:border-cyan-400/60 hover:bg-cyan-400/10"

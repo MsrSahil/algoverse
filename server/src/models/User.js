@@ -54,7 +54,8 @@ const userSchema = new mongoose.Schema(
       of: {
         viewed: { type: Boolean, default: false },
         completed: { type: Boolean, default: false },
-        timeSpent: { type: Number, default: 0 }
+        timeSpent: { type: Number, default: 0 },
+        completedAt: { type: Date, default: null }
       },
       default: {}
     },

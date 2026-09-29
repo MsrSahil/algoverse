@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import AlgorithmHeader from '../../components/algorithm/AlgorithmHeader'
 import AlgorithmOverview from '../../components/algorithm/AlgorithmOverview'
 import VisualizationLab from '../../components/algorithm/VisualizationLab'
@@ -17,13 +18,19 @@ import { useVisualizationEngine } from '../../components/visualizer/useVisualiza
 import { getAlgorithmGenerator } from '../../algorithms/registry'
 import { createVisualizationStep } from '../../components/visualizer/visualizationUtils'
 import { STEP_TYPES } from '../../components/visualizer/visualizationTypes'
+import { progressService } from '../../services/progressService'
 
 const DEFAULT_ARRAY = [50, 30, 80, 10, 60]
 
 const AlgorithmDetailsPage = () => {
   const { slug } = useParams()
+  const { isAuthenticated, authLoading } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
+  const [progressLoading, setProgressLoading] = useState(false)
+  const [completionLoading, setCompletionLoading] = useState(false)
+  const [completionError, setCompletionError] = useState(null)
+  const learningStartedAtRef = useRef(null)
 
   const algorithm = algorithmLookupBySlug[slug]
 
@@ -45,6 +52,48 @@ const AlgorithmDetailsPage = () => {
       setCustomArray(DEFAULT_ARRAY)
     }
   }, [slug, algorithm])
+
+  useEffect(() => {
+    let isActive = true
+
+    setIsComplete(false)
+    setCompletionError(null)
+
+    if (authLoading || !isAuthenticated) {
+      setProgressLoading(false)
+      return () => {
+        isActive = false
+      }
+    }
+
+    setProgressLoading(true)
+    progressService
+      .getAll()
+      .then((response) => {
+        if (!isActive) return
+
+        const existingProgress = response.data?.progress?.find((item) => item.algorithmSlug === slug)
+        setIsComplete(Boolean(existingProgress?.completed))
+      })
+      .catch(() => {
+        if (isActive) {
+          setCompletionError('Unable to load progress. Please try again.')
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setProgressLoading(false)
+        }
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [authLoading, isAuthenticated, slug])
+
+  useEffect(() => {
+    learningStartedAtRef.current = isAuthenticated && !authLoading ? Date.now() : null
+  }, [authLoading, isAuthenticated, slug])
 
   // Look up registered step generator from algorithm registry
   const generator = useMemo(() => {
@@ -131,6 +180,26 @@ const AlgorithmDetailsPage = () => {
     setCustomArray(defaultAlgorithmArray)
   }
 
+  const handleComplete = async () => {
+    if (!isAuthenticated || isComplete || !isCompleted || completionLoading) return
+
+    setCompletionLoading(true)
+    setCompletionError(null)
+
+    const timeSpent = learningStartedAtRef.current
+      ? Math.max(0, Math.round((Date.now() - learningStartedAtRef.current) / 1000))
+      : 0
+
+    try {
+      await progressService.complete(slug, timeSpent)
+      setIsComplete(true)
+    } catch (error) {
+      setCompletionError(error.message || 'Unable to save progress. Please try again.')
+    } finally {
+      setCompletionLoading(false)
+    }
+  }
+
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -141,7 +210,11 @@ const AlgorithmDetailsPage = () => {
           isFavorite={isFavorite}
           isComplete={isComplete}
           onToggleFavorite={() => setIsFavorite((s) => !s)}
-          onToggleComplete={() => setIsComplete((s) => !s)}
+          onToggleComplete={handleComplete}
+          canComplete={isAuthenticated && (isCompleted || isComplete)}
+          completionLoading={completionLoading}
+          progressLoading={progressLoading}
+          completionError={completionError}
         />
 
         {/* ── Algorithm overview (condensed above the lab) ─────────────── */}

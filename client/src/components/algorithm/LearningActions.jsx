@@ -7,8 +7,20 @@ const LearningActions = ({
   isFavorite,
   isComplete,
   onToggleFavorite,
-  onToggleComplete
+  onToggleComplete,
+  canComplete = true,
+  completionLoading = false,
+  progressLoading = false,
+  completionError = null
 }) => {
+  const completionLabel = progressLoading
+    ? 'Loading progress...'
+    : completionLoading
+      ? 'Saving...'
+      : isComplete
+        ? 'Completed ✓'
+        : 'Mark as Complete'
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
@@ -24,12 +36,17 @@ const LearningActions = ({
       <button
         type="button"
         onClick={onToggleComplete}
-        className={actionButtonClassName}
+        disabled={progressLoading || completionLoading || isComplete || !canComplete}
+        className={`${actionButtonClassName} disabled:cursor-not-allowed disabled:opacity-50`}
         aria-label={isComplete ? 'Marked as complete' : 'Mark algorithm as complete'}
       >
         <CheckCircle2 className={`h-4 w-4 ${isComplete ? 'text-emerald-300' : 'text-slate-300'}`} />
-        {isComplete ? 'Completed' : 'Mark as Complete'}
+        {completionLabel}
       </button>
+
+      <span className="min-h-5 basis-full text-right text-xs text-slate-400" role="status" aria-live="polite">
+        {completionError || (!progressLoading && isComplete ? 'Completed ✓' : '')}
+      </span>
     </div>
   )
 }
