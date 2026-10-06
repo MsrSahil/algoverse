@@ -10,19 +10,14 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 
 const app = express()
+app.set('trust proxy', 1)
 
 const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : ['http://localhost:5173'];
 
 // CORS configuration
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200
   })

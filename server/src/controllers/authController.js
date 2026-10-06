@@ -11,12 +11,12 @@ import {
   passwordsMatch
 } from '../validators/authValidator.js'
 
-// Base cookie options without maxAge (we will set maxAge dynamically)
-const BASE_COOKIE_OPTIONS = {
+const getCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'Lax'
-}
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/'
+})
 
 export const register = asyncHandler(async (req, res, next) => {
   const { fullName, username, email, password, confirmPassword } = req.body
@@ -83,7 +83,7 @@ export const register = asyncHandler(async (req, res, next) => {
   const maxAge = 7 * 24 * 60 * 60 * 1000 
 
   // Set cookie
-  res.cookie('accessToken', accessToken, { ...BASE_COOKIE_OPTIONS, maxAge })
+  res.cookie('accessToken', accessToken, { ...getCookieOptions(), maxAge })
 
   const userResponse = user.toJSON()
 
@@ -138,7 +138,7 @@ export const login = asyncHandler(async (req, res, next) => {
   const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
 
   // Set cookie
-  res.cookie('accessToken', accessToken, { ...BASE_COOKIE_OPTIONS, maxAge })
+  res.cookie('accessToken', accessToken, { ...getCookieOptions(), maxAge })
 
   const userResponse = user.toJSON()
 
@@ -148,7 +148,7 @@ export const login = asyncHandler(async (req, res, next) => {
 })
 
 export const logout = asyncHandler(async (req, res, next) => {
-  res.clearCookie('accessToken', BASE_COOKIE_OPTIONS)
+  res.clearCookie('accessToken', getCookieOptions())
   res.status(200).json(
     new ApiResponse(200, {}, 'Logged out successfully')
   )
