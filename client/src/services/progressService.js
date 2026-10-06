@@ -1,4 +1,4 @@
-import apiClient from './authService.js'
+import apiClient from '../config/apiClient.js'
 
 const getErrorMessage = (error, fallbackMessage) =>
   error.response?.data?.message || error.message || fallbackMessage

@@ -6,17 +6,37 @@ import authRoutes from './routes/authRoutes.js'
 import progressRoutes from './routes/progressRoutes.js'
 import favoriteRoutes from './routes/favoriteRoutes.js'
 import { errorHandler } from './middleware/errorMiddleware.js'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 
 const app = express()
+
+const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : ['http://localhost:5173'];
 
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     credentials: true,
     optionsSuccessStatus: 200
   })
 )
+
+// Security middleware
+app.use(helmet())
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+})
+app.use(limiter)
 
 // Body parsing middleware
 app.use(express.json({ limit: '16kb' }))
@@ -29,7 +49,7 @@ app.use(cookieParser())
 app.use(morgan('dev'))
 
 // Health check route
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({ message: 'Server is running' })
 })
 
